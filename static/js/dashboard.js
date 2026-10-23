@@ -114,11 +114,11 @@ document.addEventListener("DOMContentLoaded", () => {
         kpiAlerts.textContent = data.stats.alerts_count?.toLocaleString() || "0";
 
         if (data.stats.model_trained) {
-          kpiModelStatus.textContent = "Trained";
-          kpiModelStatus.className = "model-status-badge status-trained";
+          kpiModelStatus.textContent = "Trained (LBPH)";
+          kpiModelStatus.className = "model-badge badge-trained";
         } else {
           kpiModelStatus.textContent = "Needs Enrollment";
-          kpiModelStatus.className = "model-status-badge status-untrained";
+          kpiModelStatus.className = "model-badge badge-untrained";
         }
       }
 
