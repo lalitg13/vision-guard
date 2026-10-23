@@ -1,12 +1,10 @@
 /**
- * VisionGuard Biometric & Security Telemetry HUD Client
- * 
- * Handles real-time polling of events, threat detection alerts,
- * headless Matplotlib analytics chart refresh, and interactive biometric enrollment.
+ * VisionGuard — Dashboard Client Controller
+ * Polling, live telemetry updates, threat notification handling, and biometric enrollment.
  */
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Elements
+  // DOM Elements
   const alertBanner = document.getElementById("alert-banner");
   const alertBannerTime = document.getElementById("alert-banner-time");
   const alertBannerTitle = document.getElementById("alert-banner-title");
@@ -36,39 +34,43 @@ document.addEventListener("DOMContentLoaded", () => {
   let toastTimeout = null;
 
   // -------------------------------------------------------------------------
-  // Toast Notifications
+  // Feedback Toast
   // -------------------------------------------------------------------------
-  function showToast(message, isAlert = false, duration = 4000) {
+  function showToast(message, isAlert = false, duration = 3500) {
     if (!toast) return;
     clearTimeout(toastTimeout);
     toast.textContent = message;
     toast.classList.remove("hidden");
+
     if (isAlert) {
-      toast.style.borderColor = "#ef4444";
-      toast.style.backgroundColor = "#450a0a";
+      toast.style.borderColor = "rgba(244, 63, 94, 0.4)";
+      toast.style.backgroundColor = "#1a0f13";
+      toast.style.color = "#fda4af";
     } else {
-      toast.style.borderColor = "#38bdf8";
-      toast.style.backgroundColor = "#1e293b";
+      toast.style.borderColor = "rgba(255, 255, 255, 0.15)";
+      toast.style.backgroundColor = "#181b24";
+      toast.style.color = "#f8fafc";
     }
+
     toastTimeout = setTimeout(() => {
       toast.classList.add("hidden");
     }, duration);
   }
 
   // -------------------------------------------------------------------------
-  // Digital Clock
+  // System Clock
   // -------------------------------------------------------------------------
   function updateClock() {
     if (serverClock) {
       const now = new Date();
-      serverClock.textContent = `SYSTEM TIME: ${now.toTimeString().split(" ")[0]} UTC${now.getTimezoneOffset() <= 0 ? "+" : "-"}${Math.abs(Math.floor(now.getTimezoneOffset() / 60))}`;
+      serverClock.textContent = `System Time: ${now.toLocaleTimeString()}`;
     }
   }
   setInterval(updateClock, 1000);
   updateClock();
 
   // -------------------------------------------------------------------------
-  // Threat Alert Banner
+  // Security Alert Banner
   // -------------------------------------------------------------------------
   alertDismissBtn?.addEventListener("click", () => {
     alertBanner.classList.add("hidden");
@@ -86,15 +88,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (latestAlert.id !== dismissedAlertId) {
         alertBannerTime.textContent = latestAlert.timestamp || new Date().toLocaleTimeString();
-        alertBannerTitle.textContent = `${latestAlert.person || "Unidentified Person"} Detected!`;
-        alertBannerDetails.textContent = `${latestAlert.details || "Facial biometric signature mismatch."} (Confidence: ${latestAlert.confidence}%)`;
+        alertBannerTitle.textContent = `${latestAlert.person || "Unidentified Person"} Detected`;
+        alertBannerDetails.textContent = `${latestAlert.details || "Facial signature mismatch."} (Match score: ${latestAlert.confidence}%)`;
         alertBanner.classList.remove("hidden");
       }
     }
   }
 
   // -------------------------------------------------------------------------
-  // Fetch Events & Update KPIs
+  // Data Fetching & Metric Updates
   // -------------------------------------------------------------------------
   async function fetchEvents() {
     if (isPolling) return;
@@ -105,60 +107,60 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = await response.json();
 
-      // 1. Update KPIs
+      // 1. Update Metrics
       if (data.stats) {
         kpiTotal.textContent = data.stats.total_events?.toLocaleString() || "0";
         kpiAuthorized.textContent = data.stats.authorized_count?.toLocaleString() || "0";
         kpiAlerts.textContent = data.stats.alerts_count?.toLocaleString() || "0";
 
         if (data.stats.model_trained) {
-          kpiModelStatus.textContent = "TRAINED (LBPH)";
-          kpiModelStatus.className = "kpi-badge kpi-badge-trained";
+          kpiModelStatus.textContent = "Trained";
+          kpiModelStatus.className = "model-status-badge status-trained";
         } else {
-          kpiModelStatus.textContent = "UNTRAINED (ENROLL NEEDED)";
-          kpiModelStatus.className = "kpi-badge kpi-badge-untrained";
+          kpiModelStatus.textContent = "Needs Enrollment";
+          kpiModelStatus.className = "model-status-badge status-untrained";
         }
       }
 
       // 2. Update Header Badges
       if (eventsCountBadge && data.events) {
-        eventsCountBadge.textContent = `${data.events.length} EVENTS`;
+        eventsCountBadge.textContent = `${data.events.length} events`;
       }
 
       if (smtpBadge && data.dispatched_emails) {
         const hasLiveGmail = data.dispatched_emails.some(d => d.mode === "GMAIL_SMTP");
         if (hasLiveGmail) {
-          smtpBadge.textContent = "SMTP: GMAIL LIVE";
-          smtpBadge.style.color = "#10b981";
-          smtpBadge.style.borderColor = "rgba(16, 185, 129, 0.4)";
+          smtpBadge.textContent = "Live Gmail SMTP";
+          smtpBadge.style.color = "#34d399";
+          smtpBadge.style.borderColor = "rgba(16, 185, 129, 0.35)";
         } else {
-          smtpBadge.textContent = "SMTP: SIMULATED";
+          smtpBadge.textContent = "Simulated SMTP";
         }
       }
 
-      // 3. Check for New Threat Alert
+      // 3. Process Active Threat Alert
       handleThreatAlert(data.latest_alert);
 
-      // 4. Render Activity Log
+      // 4. Render Activity Feed
       renderActivityLog(data.events || []);
 
     } catch (err) {
-      console.warn("[VisionGuard HUD] Events fetch error:", err);
+      console.warn("[VisionGuard] Event polling warning:", err);
     } finally {
       isPolling = false;
     }
   }
 
   // -------------------------------------------------------------------------
-  // Render Activity Log Feed
+  // Activity Feed Renderer
   // -------------------------------------------------------------------------
   function renderActivityLog(events) {
     if (!activityLog) return;
 
     if (events.length === 0) {
       activityLog.innerHTML = `
-        <div class="empty-state">
-          <span>No security events recorded in current telemetry buffer.</span>
+        <div class="feed-placeholder">
+          <span>No activity recorded in the telemetry buffer.</span>
         </div>
       `;
       return;
@@ -166,23 +168,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const html = events.map(evt => {
       const isAuth = (evt.type === "Authorized" || evt.status === "GRANTED");
-      const itemClass = isAuth ? "item-auth" : "item-alert";
-      const badgeClass = isAuth ? "item-type-auth" : "item-type-alert";
-      const badgeText = isAuth ? "AUTHORIZED" : "SECURITY ALERT";
-      const confClass = evt.confidence >= 60 ? "high" : "low";
+      const rowClass = isAuth ? "activity-row-authorized" : "activity-row-alert";
+      const tagClass = isAuth ? "row-tag-auth" : "row-tag-alert";
+      const tagText = isAuth ? "Authorized" : "Alert";
+      const confClass = evt.confidence >= 60 ? "conf-high" : "conf-low";
 
       return `
-        <div class="activity-item ${itemClass}">
-          <div class="item-top">
-            <div class="item-badge-group">
-              <span class="item-type-badge ${badgeClass}">${badgeText}</span>
-              <span class="item-person">${escapeHtml(evt.person || (isAuth ? "Admin" : "Unidentified"))}</span>
-              <span class="item-confidence ${confClass}">${evt.confidence}% MATCH</span>
+        <div class="activity-row ${rowClass}">
+          <div class="row-top">
+            <div class="row-badge-group">
+              <span class="row-tag ${tagClass}">${tagText}</span>
+              <span class="row-person">${escapeHtml(evt.person || (isAuth ? "Admin" : "Unidentified"))}</span>
+              <span class="row-confidence ${confClass}">${evt.confidence}% match</span>
             </div>
-            <span class="item-timestamp">${escapeHtml(evt.timestamp || "")}</span>
+            <span class="row-time">${escapeHtml(evt.timestamp || "")}</span>
           </div>
-          <div class="item-details">${escapeHtml(evt.details || "")}</div>
-          <div class="item-id">EVENT ID: ${escapeHtml(evt.id || "N/A")}</div>
+          <div class="row-details">${escapeHtml(evt.details || "")}</div>
+          <div class="row-id">Event ID: ${escapeHtml(evt.id || "N/A")}</div>
         </div>
       `;
     }).join("");
@@ -200,7 +202,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // -------------------------------------------------------------------------
-  // Auto-Refresh Analytics Chart (Every 4 Seconds)
+  // Auto-Refresh Analytics Chart (Every 4s)
   // -------------------------------------------------------------------------
   function refreshAnalytics() {
     if (analyticsImg) {
@@ -216,37 +218,36 @@ document.addEventListener("DOMContentLoaded", () => {
   btnEnroll?.addEventListener("click", async () => {
     try {
       btnEnroll.classList.add("loading");
-      showToast("📸 Initializing Biometric Face Enrollment... Look directly at the camera!");
+      showToast("Starting face enrollment. Look directly at the camera.");
 
       const res = await fetch("/api/enroll", { method: "POST" });
       const data = await res.json();
 
       if (data.status === "enrolling") {
-        showToast("📸 Capturing 20 biometric crops. Keep your face centered in the camera feed...", false, 6000);
+        showToast("Capturing 20 face samples. Please keep looking forward.", false, 5000);
       }
     } catch (err) {
-      showToast("❌ Failed to initiate enrollment sequence.", true);
+      showToast("Unable to start enrollment sequence.", true);
     } finally {
       setTimeout(() => btnEnroll.classList.remove("loading"), 2500);
     }
   });
 
-  // 2. Simulate Intruder Alert
+  // 2. Simulate Alert
   btnSimulate?.addEventListener("click", async () => {
     try {
       const res = await fetch("/api/simulate_alert", { method: "POST" });
       const data = await res.json();
 
-      showToast("🚨 Security Alert: Intrusion simulation dispatched!", true);
-      // Immediately refresh telemetry
+      showToast("Intrusion alert simulated.", true);
       fetchEvents();
       refreshAnalytics();
     } catch (err) {
-      showToast("❌ Failed to simulate alert.", true);
+      showToast("Unable to simulate alert.", true);
     }
   });
 
-  // 3. Reset Demo Data
+  // 3. Reset Demo
   btnReset?.addEventListener("click", async () => {
     try {
       const res = await fetch("/api/clear_events", { method: "POST" });
@@ -256,23 +257,18 @@ document.addEventListener("DOMContentLoaded", () => {
       lastSeenAlertId = null;
       alertBanner.classList.add("hidden");
 
-      showToast("🔄 Telemetry database reset to 28 fresh seed events.");
+      showToast("Demo database reset to seed events.");
       fetchEvents();
       refreshAnalytics();
     } catch (err) {
-      showToast("❌ Failed to reset demo data.", true);
+      showToast("Unable to reset demo data.", true);
     }
   });
 
   // -------------------------------------------------------------------------
-  // Initialization & Timers
+  // Timers & Initial Ingestion
   // -------------------------------------------------------------------------
-  // Initial fetch
   fetchEvents();
-
-  // Poll events every 2 seconds
   setInterval(fetchEvents, 2000);
-
-  // Refresh analytics chart every 4 seconds with cache-buster
   setInterval(refreshAnalytics, 4000);
 });
