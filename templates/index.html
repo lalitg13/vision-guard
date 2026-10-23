@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VisionGuard — AI Infrastructure for Edge Facial Biometrics</title>
+  <title>VisionGuard — Digital Success Biometric Surveillance</title>
   <link rel="stylesheet" href="/static/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
-<body class="bg-black text-white antialiased overflow-x-hidden selection:bg-blue-600 selection:text-white">
+<body class="bg-black text-white antialiased overflow-x-hidden">
 
-  <!-- Atmospheric Shader-Lit Infrastructure Field (100vw x 120vh) -->
+  <!-- Atmospheric Shader Gradient Canvas (@ui-layouts/hero-digital-success) -->
   <canvas id="shader-canvas" class="shader-canvas" aria-hidden="true"></canvas>
 
-  <!-- Top Threat Alert Banner (Dismissible) -->
+  <!-- Threat Notification Alert Banner (Top Dismissible) -->
   <aside id="alert-banner" class="alert-banner hidden" aria-live="assertive" role="alert">
     <div class="alert-banner-inner">
       <div class="alert-banner-icon">
@@ -26,14 +26,14 @@
       </div>
       <div class="alert-banner-text">
         <div class="alert-banner-heading">
-          <span class="alert-banner-tag">Security Threat</span>
+          <span class="alert-banner-tag">Security Alert</span>
           <strong id="alert-banner-title">Unidentified Person Detected</strong>
           <span id="alert-banner-time" class="alert-banner-time">--:--:--</span>
         </div>
-        <p id="alert-banner-details" class="alert-banner-subtext">Biometric distance threshold exceeded. Security event dispatched.</p>
+        <p id="alert-banner-details" class="alert-banner-subtext">Biometric distance threshold exceeded. Intrusion alert logged.</p>
       </div>
       <button id="alert-dismiss-btn" class="alert-dismiss-btn" aria-label="Dismiss Alert" title="Dismiss notification">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="18" y1="6" x2="6" y2="18"/>
           <line x1="6" y1="6" x2="18" y2="18"/>
         </svg>
@@ -41,53 +41,29 @@
     </div>
   </aside>
 
-  <!-- Main Infrastructure Canvas -->
+  <!-- Main Digital Success Container -->
   <div class="relative z-10 min-h-screen flex flex-col w-full">
 
-    <!-- Top Navigation Header -->
-    <header class="w-full border-b border-white/10 bg-black/40 backdrop-blur-md">
+    <!-- Header Navigation Bar -->
+    <header class="w-full border-b border-white/10 bg-black/30 backdrop-blur-md">
       <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-sm bg-neutral-900 border border-neutral-800 flex items-center justify-center text-blue-400 shadow-inner">
+          <div class="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-cyan-300 shadow-[0_0_15px_rgba(146,219,224,0.2)]">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
               <circle cx="12" cy="11" r="3"/>
             </svg>
           </div>
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="font-semibold text-base tracking-tight text-white">VisionGuard</span>
-              <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full border border-blue-800 bg-blue-900/40 text-blue-300">Edge v2.4</span>
-            </div>
+          <div class="flex items-center gap-2">
+            <span class="font-semibold text-lg tracking-tight text-white">VisionGuard</span>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-300">Edge 2.0</span>
           </div>
         </div>
 
         <div class="flex items-center gap-3">
-          <button id="btn-enroll" class="cursor-pointer bg-white text-black px-4 py-2 rounded-sm text-sm font-semibold flex items-center gap-2 hover:bg-neutral-200 transition shadow-lg">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 7V4h3M20 7V4h-3M4 17v3h3M20 17v3h-3"/>
-              <circle cx="12" cy="12" r="3"/>
-              <line x1="12" y1="16" x2="12" y2="17"/>
-              <line x1="12" y1="7" x2="12" y2="8"/>
-            </svg>
-            <span>Enroll Face</span>
-          </button>
-
-          <button id="btn-simulate" class="cursor-pointer bg-rose-500/15 hover:bg-rose-500/25 transition px-4 py-2 rounded-sm text-sm font-semibold border border-rose-500/30 text-rose-200 backdrop-blur-md flex items-center gap-2">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="8" x2="12" y2="12"/>
-              <line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            <span>Simulate Alert</span>
-          </button>
-
-          <button id="btn-reset" class="cursor-pointer bg-white/10 hover:bg-white/20 transition px-4 py-2 rounded-sm text-sm font-semibold border border-white/10 backdrop-blur-md text-white flex items-center gap-2">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-              <path d="M3 3v5h5"/>
-            </svg>
-            <span>Reset Demo</span>
+          <button id="status-pill-btn" class="flex items-center gap-2 px-5 py-2 rounded-full font-medium text-xs bg-neutral-900 border border-neutral-700/60 text-white shadow-sm">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse"></span>
+            <span>Live Surveillance</span>
           </button>
         </div>
       </div>
@@ -96,80 +72,94 @@
     <!-- Feedback Toast -->
     <div id="toast" class="toast hidden"></div>
 
-    <!-- Wide Hero Stage -->
-    <div class="max-w-7xl mx-auto px-6 pt-12 pb-8 w-full flex flex-col items-center text-center">
-      <div class="border border-blue-800 flex items-center gap-2 rounded-2xl p-1 pr-3 bg-blue-800/40 backdrop-blur-lg mb-4 text-xs font-medium">
-        <span class="py-0.5 px-2 rounded-lg bg-blue-600 text-white font-medium">AI Vision</span>
-        <span class="text-neutral-200">Local-First Biometric Threat Radar &amp; Telemetry</span>
-      </div>
+    <!-- Main Hero Digital Success Stage -->
+    <div class="max-w-7xl mx-auto px-6 pt-16 pb-12 w-full flex flex-col justify-center">
 
-      <h1 class="text-4xl md:text-6xl font-medium tracking-tight text-white leading-[115%] max-w-4xl my-3">
-        Autonomous Edge Biometrics <br />
-        <span class="text-neutral-400 font-light">&amp; Surveillance Infrastructure</span>
+      <!-- Hero Headline with Digital Success Gradient -->
+      <h1 class="flex flex-col xl:flex-row text-[9vw] xl:text-[5.2vw] font-medium leading-[100%] items-baseline gap-x-5 gap-y-2 pb-6 text-white tracking-tight">
+        Unlocking
+        <span class="bg-clip-text text-transparent bg-gradient-to-r from-white via-cyan-300 to-blue-500 pb-2 xl:inline-block block">
+          Digital Defense
+        </span>
       </h1>
 
-      <p class="text-neutral-300 text-base md:text-lg max-w-2xl font-light mb-8">
-        Real-time facial detection and LBPH recognition operating directly on local hardware. Zero cloud latency, zero external data leakage, and high-frequency telemetry.
-      </p>
+      <!-- Action Pill Buttons & Agency-Style Description -->
+      <div class="flex flex-col lg:flex-row items-start lg:items-center gap-8 mb-12">
+        <div class="flex flex-wrap justify-start gap-4">
+          <button id="btn-enroll" class="cursor-pointer relative group overflow-hidden bg-white text-black px-7 py-3.5 rounded-full font-medium text-sm flex items-center gap-2.5 shadow-[0_0_24px_rgba(146,219,224,0.4)] hover:bg-neutral-200 transition">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 7V4h3M20 7V4h-3M4 17v3h3M20 17v3h-3"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+            <span>Enroll Administrator</span>
+          </button>
 
-      <!-- KPI Metrics Row (Translucent Glass Surfaces) -->
-      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full mb-10 text-left">
-        <div class="metric-card">
-          <div class="flex items-center justify-between mb-3">
-            <span class="text-xs font-medium uppercase tracking-wider text-neutral-400">Total Detections</span>
-            <span class="text-[10px] font-mono text-neutral-500 bg-white/5 px-2 py-0.5 rounded">All-Time</span>
-          </div>
-          <div class="text-3xl md:text-4xl font-semibold tracking-tight font-mono text-white mb-2" id="kpi-total">--</div>
-          <p class="text-xs text-neutral-400 font-light">Aggregated edge detections across all sessions</p>
+          <button id="btn-simulate" class="cursor-pointer border border-white/20 bg-white/5 backdrop-blur-md px-6 py-3.5 rounded-full font-medium text-sm hover:bg-white/10 transition text-white flex items-center gap-2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <span>Simulate Intrusion</span>
+          </button>
+
+          <button id="btn-reset" class="cursor-pointer border border-white/10 bg-white/5 backdrop-blur-md px-5 py-3.5 rounded-full font-medium text-sm hover:bg-white/10 transition text-neutral-400 flex items-center gap-2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+              <path d="M3 3v5h5"/>
+            </svg>
+            <span>Reset Demo</span>
+          </button>
         </div>
 
-        <div class="metric-card metric-card-emerald">
-          <div class="flex items-center justify-between mb-3">
-            <span class="text-xs font-medium uppercase tracking-wider text-neutral-400">Authorized Access</span>
-            <span class="text-[10px] font-mono text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded">Verified</span>
-          </div>
-          <div class="text-3xl md:text-4xl font-semibold tracking-tight font-mono text-emerald-400 mb-2" id="kpi-authorized">--</div>
-          <p class="text-xs text-neutral-400 font-light">Admin biometric matches (LBPH distance &lt; 75)</p>
-        </div>
+        <p class="max-w-md text-neutral-200 text-base font-light leading-relaxed">
+          Autonomous edge computer vision with live biometric recognition, on-the-fly model enrollment, and real-time security telemetry.
+        </p>
+      </div>
 
-        <div class="metric-card metric-card-rose">
-          <div class="flex items-center justify-between mb-3">
-            <span class="text-xs font-medium uppercase tracking-wider text-neutral-400">Security Alerts</span>
-            <span class="text-[10px] font-mono text-rose-300 bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded">Flagged</span>
-          </div>
-          <div class="text-3xl md:text-4xl font-semibold tracking-tight font-mono text-rose-400 mb-2" id="kpi-alerts">--</div>
-          <p class="text-xs text-neutral-400 font-light">Unidentified persons or intrusion probes</p>
+      <!-- Hero Digital Success Footer Stats Grid -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4 bg-black/35 backdrop-blur-xl border border-white/10 p-6 rounded-2xl w-full mb-12 shadow-2xl">
+        <div>
+          <p class="text-white text-sm font-medium mb-1">Total Detections</p>
+          <p class="text-3xl font-semibold font-mono text-white tracking-tight" id="kpi-total">--</p>
+          <p class="text-neutral-400 text-xs mt-1">Processed facial crops</p>
         </div>
-
-        <div class="metric-card metric-card-blue">
-          <div class="flex items-center justify-between mb-3">
-            <span class="text-xs font-medium uppercase tracking-wider text-neutral-400">Biometric Engine</span>
-            <span class="text-[10px] font-mono text-blue-300 bg-blue-500/10 border border-blue-500/20 px-2 py-0.5 rounded">Local</span>
-          </div>
-          <div class="my-1.5">
+        <div>
+          <p class="text-white text-sm font-medium mb-1">Authorized Access</p>
+          <p class="text-3xl font-semibold font-mono text-emerald-400 tracking-tight" id="kpi-authorized">--</p>
+          <p class="text-neutral-400 text-xs mt-1">Verified administrator</p>
+        </div>
+        <div>
+          <p class="text-white text-sm font-medium mb-1">Security Alerts</p>
+          <p class="text-3xl font-semibold font-mono text-rose-400 tracking-tight" id="kpi-alerts">--</p>
+          <p class="text-neutral-400 text-xs mt-1">Unrecognized subjects</p>
+        </div>
+        <div>
+          <p class="text-white text-sm font-medium mb-1">Biometric Model</p>
+          <div class="mt-1">
             <span id="kpi-model-status" class="model-badge badge-pending">Checking...</span>
           </div>
-          <p class="text-xs text-neutral-400 font-light">OpenCV LBPH Local Histogram Recognizer</p>
+          <p class="text-neutral-400 text-xs mt-1">Local LBPH Weights</p>
         </div>
-      </section>
+      </div>
 
-      <!-- Main Operational Grid (2-Columns: Optical Stream & Analytics vs Real-time Audit Stream) -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full text-left">
+      <!-- Main Operational Console (2-Columns) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
         
-        <!-- Left Stage: Live Camera Feed & Analytics Chart (7 Columns) -->
+        <!-- Left: Live Optical Ingestion & Analytics Chart -->
         <div class="lg:col-span-7 flex flex-col gap-6">
           
-          <!-- Live Camera Card -->
+          <!-- Live Camera Panel -->
           <div class="glass-panel">
             <div class="panel-header">
               <div class="flex items-center gap-2.5">
-                <div class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse"></div>
-                <h2 class="text-sm font-semibold tracking-tight text-white">Live Optical Ingestion</h2>
+                <div class="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(146,219,224,0.8)]"></div>
+                <h2 class="text-sm font-semibold tracking-tight text-white">Live Camera Ingestion</h2>
                 <span class="text-xs text-neutral-400 font-mono">CAM_01</span>
               </div>
               <div class="flex items-center gap-2">
-                <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-white/5 border border-white/10 text-neutral-300">640 &times; 480</span>
-                <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">30 FPS</span>
+                <span class="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-neutral-300">640 &times; 480</span>
+                <span class="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300">Live Stream</span>
               </div>
             </div>
 
@@ -180,20 +170,20 @@
             <div class="panel-footer">
               <div class="flex items-center gap-2 text-xs text-neutral-400">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                <span>Detector: <strong class="text-neutral-200">Haar Frontal Cascade</strong></span>
+                <span>Detector: <strong class="text-neutral-200">Haar Cascade</strong></span>
               </div>
               <div class="flex items-center gap-2 text-xs text-neutral-400">
-                <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
                 <span>Classifier: <strong class="text-neutral-200">LBPH (R=1, P=8)</strong></span>
               </div>
               <div class="flex items-center gap-2 text-xs text-neutral-400">
                 <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-                <span>Rate Limit: <strong class="text-neutral-200">6.0s Cooldown</strong></span>
+                <span>Cooldown: <strong class="text-neutral-200">6.0s Per Person</strong></span>
               </div>
             </div>
           </div>
 
-          <!-- Headless Analytics Panel -->
+          <!-- Headless Analytics Chart Panel -->
           <div class="glass-panel">
             <div class="panel-header">
               <div class="flex items-center gap-2.5">
@@ -201,7 +191,7 @@
                 <h2 class="text-sm font-semibold tracking-tight text-white">Telemetry &amp; Threat Analytics</h2>
               </div>
               <div class="flex items-center gap-1.5 text-xs text-neutral-400 font-mono">
-                <span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-ping"></span>
+                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
                 <span>Auto-refresh 4s</span>
               </div>
             </div>
@@ -213,17 +203,17 @@
 
         </div>
 
-        <!-- Right Stage: Real-Time Activity & Audit Log (5 Columns) -->
+        <!-- Right: Activity & Audit Feed -->
         <div class="lg:col-span-5 flex flex-col">
           <div class="glass-panel h-full flex flex-col">
             <div class="panel-header">
               <div class="flex items-center gap-2.5">
                 <div class="w-2 h-2 rounded-full bg-rose-400"></div>
-                <h2 class="text-sm font-semibold tracking-tight text-white">Activity &amp; Audit Log</h2>
+                <h2 class="text-sm font-semibold tracking-tight text-white">Activity Log</h2>
               </div>
               <div class="flex items-center gap-2">
-                <span id="events-count-badge" class="text-[11px] font-mono px-2 py-0.5 rounded bg-white/5 border border-white/10 text-neutral-300">0 events</span>
-                <span id="smtp-badge" class="text-[11px] font-mono px-2 py-0.5 rounded bg-blue-500/10 border border-blue-500/20 text-blue-300">Simulated SMTP</span>
+                <span id="events-count-badge" class="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-neutral-300">0 events</span>
+                <span id="smtp-badge" class="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300">Simulated SMTP</span>
               </div>
             </div>
 
@@ -242,11 +232,12 @@
 
       </div>
 
-      <!-- Footer -->
+      <!-- Application Footer -->
       <footer class="w-full mt-16 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between text-xs text-neutral-500 font-mono gap-4">
-        <div>VisionGuard &bull; Local-First AI Vision Infrastructure &bull; Port 5001</div>
+        <div>VisionGuard &bull; Local Biometric Defense &bull; Port 5001</div>
         <div id="server-clock">SYSTEM TIME: --:--:--</div>
       </footer>
+
     </div>
   </div>
 

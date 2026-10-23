@@ -1,20 +1,21 @@
 /* ==========================================================================
-   VisionGuard — AI Infrastructure Design System
-   Source of truth: hero-ai-infrastructure (ui-layouts/uilayouts)
-   Shader-lit atmospheric background, deep black canvas, translucent glass layers.
+   VisionGuard — Hero Digital Success Design System
+   Source of truth: @ui-layouts/hero-digital-success
+   Palette: Black (#000000), Aqua (#92dbe0), Electric Blue (#0b7bff), Indigo (#3865cf)
    ========================================================================== */
 
 :root {
   --color-canvas: #000000;
-  --color-surface: rgba(15, 15, 18, 0.65);
-  --color-surface-elevated: rgba(24, 24, 28, 0.7);
-  --color-surface-hover: rgba(35, 35, 42, 0.8);
+  --color-surface: rgba(12, 14, 18, 0.55);
+  --color-surface-elevated: rgba(20, 24, 32, 0.65);
+  --color-surface-hover: rgba(30, 36, 48, 0.75);
 
   --border-glass: rgba(255, 255, 255, 0.1);
   --border-glass-hover: rgba(255, 255, 255, 0.2);
 
-  --color-blue-accent: #1f469a;
-  --color-blue-bright: #3b82f6;
+  --color-cyan-glow: #92dbe0;
+  --color-blue-electric: #0b7bff;
+  --color-indigo: #3865cf;
 
   --color-emerald: #10b981;
   --color-rose: #f43f5e;
@@ -41,7 +42,7 @@ body {
 }
 
 /* ==========================================================================
-   Atmospheric Shader Canvas (100vw x 120vh)
+   Shader-Lit Background Field (100vw x 120vh)
    ========================================================================== */
 
 .shader-canvas {
@@ -56,7 +57,7 @@ body {
 }
 
 /* ==========================================================================
-   Top Threat Alert Banner
+   Top Threat Alert Banner (Dismissible)
    ========================================================================== */
 
 .alert-banner {
@@ -65,12 +66,12 @@ body {
   left: 0;
   right: 0;
   z-index: 100;
-  background-color: rgba(40, 10, 15, 0.85);
+  background-color: rgba(36, 10, 16, 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid rgba(244, 63, 94, 0.35);
   padding: 10px 24px;
-  animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: slideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .alert-banner.hidden {
@@ -94,7 +95,7 @@ body {
 .alert-banner-icon {
   width: 32px;
   height: 32px;
-  border-radius: 4px;
+  border-radius: 8px;
   background-color: rgba(244, 63, 94, 0.15);
   border: 1px solid rgba(244, 63, 94, 0.3);
   display: flex;
@@ -119,8 +120,8 @@ body {
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  padding: 2px 7px;
-  border-radius: 3px;
+  padding: 2px 8px;
+  border-radius: 12px;
   background-color: rgba(244, 63, 94, 0.25);
   color: #fff;
   font-family: var(--font-mono);
@@ -151,7 +152,7 @@ body {
   cursor: pointer;
   width: 28px;
   height: 28px;
-  border-radius: 4px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -159,7 +160,7 @@ body {
 }
 
 .alert-dismiss-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.18);
   transform: scale(1.05);
 }
 
@@ -172,11 +173,11 @@ body {
   bottom: 24px;
   right: 24px;
   z-index: 1000;
-  padding: 11px 18px;
-  border-radius: 4px;
+  padding: 12px 20px;
+  border-radius: 20px;
   font-size: 13px;
   font-weight: 500;
-  background-color: rgba(18, 18, 22, 0.9);
+  background-color: rgba(18, 20, 26, 0.9);
   backdrop-filter: blur(16px);
   border: 1px solid var(--border-glass);
   color: #ffffff;
@@ -199,12 +200,12 @@ body {
 
 .glass-panel {
   background-color: var(--color-surface);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   border: 1px solid var(--border-glass);
-  border-radius: 12px;
+  border-radius: 18px;
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
   transition: border-color 0.2s ease;
 }
 
@@ -216,14 +217,14 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 20px;
-  background-color: rgba(255, 255, 255, 0.03);
+  padding: 16px 22px;
+  background-color: rgba(255, 255, 255, 0.02);
   border-bottom: 1px solid var(--border-glass);
 }
 
 .video-stage {
   width: 100%;
-  background-color: #030304;
+  background-color: #020304;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -242,7 +243,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 20px;
+  padding: 12px 22px;
   background-color: rgba(255, 255, 255, 0.02);
   border-top: 1px solid var(--border-glass);
   flex-wrap: wrap;
@@ -253,37 +254,21 @@ body {
   width: 100%;
   height: auto;
   display: block;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 /* ==========================================================================
-   KPI Metrics Cards
+   Pill Badges & Buttons
    ========================================================================== */
-
-.metric-card {
-  background-color: var(--color-surface);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--border-glass);
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  transition: all 0.2s ease;
-}
-
-.metric-card:hover {
-  border-color: var(--border-glass-hover);
-  transform: translateY(-1px);
-}
 
 .model-badge {
   display: inline-block;
   font-size: 13.5px;
   font-weight: 600;
   font-family: var(--font-mono);
-  padding: 4px 10px;
-  border-radius: 4px;
+  padding: 4px 12px;
+  border-radius: 20px;
 }
 
 .badge-trained {
@@ -333,8 +318,8 @@ body {
 .activity-row {
   background-color: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  padding: 12px 14px;
+  border-radius: 12px;
+  padding: 13px 15px;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -342,8 +327,8 @@ body {
 }
 
 .activity-row:hover {
-  background-color: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.18);
+  background-color: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.2);
   transform: translateX(2px);
 }
 
@@ -369,12 +354,12 @@ body {
 }
 
 .row-tag {
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 700;
   font-family: var(--font-mono);
   letter-spacing: 0.04em;
-  padding: 2px 6px;
-  border-radius: 3px;
+  padding: 2px 8px;
+  border-radius: 12px;
 }
 
 .row-tag-auth {
@@ -390,17 +375,17 @@ body {
 }
 
 .row-person {
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 600;
   color: #ffffff;
 }
 
 .row-confidence {
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 600;
   font-family: var(--font-mono);
-  padding: 1px 6px;
-  border-radius: 3px;
+  padding: 1px 7px;
+  border-radius: 12px;
 }
 
 .conf-high {
@@ -431,12 +416,11 @@ body {
   color: #64748b;
 }
 
-/* Spinner */
 .spinner {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border: 2px solid rgba(255, 255, 255, 0.1);
-  border-top-color: var(--color-blue-bright);
+  border-top-color: #92dbe0;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -454,29 +438,50 @@ body {
 .flex { display: flex; }
 .flex-col { flex-direction: column; }
 .items-center { align-items: center; }
+.items-start { align-items: flex-start; }
+.items-baseline { align-items: baseline; }
 .justify-between { justify-content: space-between; }
 .justify-center { justify-content: center; }
+.justify-start { justify-content: flex-start; }
 .w-full { width: 100%; }
 .h-full { height: 100%; }
-.text-center { text-align: center; }
-.text-left { text-align: left; }
 .gap-2 { gap: 0.5rem; }
 .gap-2\.5 { gap: 0.625rem; }
 .gap-3 { gap: 0.75rem; }
 .gap-4 { gap: 1rem; }
 .gap-6 { gap: 1.5rem; }
+.gap-8 { gap: 2rem; }
+
+.rounded-full { border-radius: 9999px; }
+.rounded-2xl { border-radius: 1rem; }
+
+.bg-clip-text {
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+.text-transparent {
+  color: transparent;
+}
+.bg-gradient-to-r {
+  background-image: linear-gradient(to right, #ffffff, #92dbe0, #0b7bff);
+}
 
 .grid { display: grid; }
-.grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+.grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
-@media (min-width: 640px) {
-  .sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .sm\:flex-row { flex-direction: row; }
+@media (min-width: 768px) {
+  .md\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 
 @media (min-width: 1024px) {
-  .lg\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .lg\:flex-row { flex-direction: row; }
+  .lg\:items-center { align-items: center; }
   .lg\:grid-cols-12 { grid-template-columns: repeat(12, minmax(0, 1fr)); }
   .lg\:col-span-7 { grid-column: span 7 / span 7; }
   .lg\:col-span-5 { grid-column: span 5 / span 5; }
+}
+
+@media (min-width: 1280px) {
+  .xl\:flex-row { flex-direction: row; }
+  .xl\:inline-block { display: inline-block; }
 }

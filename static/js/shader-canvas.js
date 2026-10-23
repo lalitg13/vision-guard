@@ -1,9 +1,11 @@
 /**
- * VisionGuard — AI Infrastructure Shader Canvas
- * Recreates the exact ShaderGradient sphere uniforms from @shadergradient/react:
- * uSpeed: 0.3, uStrength: 0.4, uDensity: 0.8, uFrequency: 5.5, uAmplitude: 7
- * rotationZ: 140, color1: #1f469a, color2: #000000, color3: #000000
- * brightness: 1.5, grain: on, camera: distance 1.5, azimuth 250, polar 140
+ * VisionGuard — Digital Success Shader Canvas
+ * Exact uniforms from @ui-layouts/hero-digital-success:
+ * uSpeed: 0.3, uStrength: 0.3, uDensity: 0.8, uFrequency: 5.5, uAmplitude: 3.2
+ * positionX: -0.1, rotationY: 130, rotationZ: 70
+ * color1: #92dbe0 (cyan), color2: #0b7bff (electric blue), color3: #3865cf (indigo)
+ * reflection: 0.4, camera: distance 0.5, zoom 15.1, azimuth 270, polar 180
+ * brightness: 0.8, grain: on
  */
 
 (function () {
@@ -25,14 +27,14 @@
     }
   `;
 
-  // Fragment Shader reproducing the 3D Simplex sphere displacement & deep #1f469a lighting
+  // Fragment Shader reproducing the luminous #92dbe0 / #0b7bff / #3865cf fluid sphere
   const fragmentShaderSrc = `
     precision highp float;
     varying vec2 vUv;
     uniform vec2 uResolution;
     uniform float uTime;
 
-    // Simplex 3D noise implementation
+    // Simplex 3D noise
     vec4 permute(vec4 x){return mod(((x*34.0)+1.0)*x, 289.0);}
     vec4 taylorInvSqrt(vec4 r){return 1.79284291400159 - 0.85373472095314 * r;}
 
@@ -83,22 +85,21 @@
     }
 
     void main() {
-      // Normalized coordinates centered at screen
       vec2 uv = (gl_FragCoord.xy - 0.5 * uResolution.xy) / min(uResolution.x, uResolution.y);
 
-      // Offset camera view to replicate azimuth=250, polar=140, distance=1.5
-      vec2 sphereCenter = vec2(0.08, 0.12);
-      vec2 p = uv - sphereCenter;
+      // positionX = -0.1, camera offset
+      vec2 center = vec2(-0.06, 0.05);
+      vec2 p = uv - center;
 
-      // Rotation matrix for rotationZ = 140 deg
-      float rad = 140.0 * 3.14159265 / 180.0;
-      mat2 rot = mat2(cos(rad), -sin(rad), sin(rad), cos(rad));
-      vec2 rotP = rot * p;
+      // Rotations: rotationY = 130, rotationZ = 70
+      float radZ = 70.0 * 3.14159265 / 180.0;
+      mat2 rotZ = mat2(cos(radZ), -sin(radZ), sin(radZ), cos(radZ));
+      vec2 rotP = rotZ * p;
 
       float dist = length(rotP);
 
-      // Raymarch-like spherical depth
-      float radius = 0.88;
+      // Sphere radius adapted to cameraZoom=15.1, cDistance=0.5
+      float radius = 0.95;
       float z = 0.0;
       if (dist < radius) {
         z = sqrt(radius * radius - dist * dist);
@@ -106,39 +107,46 @@
 
       vec3 pos = vec3(rotP, z);
 
-      // Animated 3D noise with shader uniforms:
-      // uSpeed: 0.3, uStrength: 0.4, uDensity: 0.8, uFrequency: 5.5, uAmplitude: 7
+      // Animated 3D noise with exact uniforms:
+      // uSpeed: 0.3, uStrength: 0.3, uDensity: 0.8, uFrequency: 5.5, uAmplitude: 3.2
       float time = uTime * 0.3;
       float noiseVal = snoise(pos * (5.5 * 0.8) + vec3(0.0, 0.0, time));
-      float displacement = noiseVal * (0.4 * 0.15);
+      float displacement = noiseVal * (0.3 * 0.12);
 
       float displacedDist = length(rotP) + displacement;
-      float sphereAlpha = smoothstep(radius, radius - 0.35, displacedDist);
+      float sphereAlpha = smoothstep(radius + 0.1, radius - 0.3, displacedDist);
 
-      // 3D Directional Lighting vector (azimuth 250, polar 140)
-      vec3 lightDir = normalize(vec3(-0.6, -0.7, 0.5));
-      vec3 normal = normalize(pos + vec3(displacement * 2.0));
+      // Lighting matching azimuth 270, polar 180, brightness 0.8
+      vec3 lightDir = normalize(vec3(-0.7, 0.4, 0.6));
+      vec3 normal = normalize(pos + vec3(displacement * 2.5));
       float diff = max(dot(normal, lightDir), 0.0);
       float rim = 1.0 - max(dot(normal, vec3(0.0, 0.0, 1.0)), 0.0);
 
-      // Core palette colors:
-      // color1: #1f469a (31, 70, 154)
-      // color2: #000000, color3: #000000
-      vec3 colorBlue = vec3(31.0/255.0, 70.0/255.0, 154.0/255.0);
-      vec3 colorBlack = vec3(0.0, 0.0, 0.0);
+      // Exact color triplet from hero-digital-success:
+      // color1: #92dbe0 (146, 219, 224) - Luminous Aqua Cyan
+      // color2: #0b7bff (11, 123, 255)  - Electric Cobalt Blue
+      // color3: #3865cf (56, 101, 207)  - Deep Indigo
+      vec3 c1 = vec3(146.0/255.0, 219.0/255.0, 224.0/255.0);
+      vec3 c2 = vec3(11.0/255.0, 123.0/255.0, 255.0/255.0);
+      vec3 c3 = vec3(56.0/255.0, 101.0/255.0, 207.0/255.0);
 
-      // Illumination combining diffuse, rim light, and brightness = 1.5
-      float intensity = (diff * 1.35 + pow(rim, 3.0) * 0.4) * 1.5;
-      intensity = clamp(intensity, 0.0, 1.0);
+      // Fluid tri-color gradient blending
+      float tColor = clamp(diff * 1.2 + pow(rim, 2.0) * 0.5, 0.0, 1.0);
+      vec3 surfaceColor = mix(c3, c2, smoothstep(0.0, 0.6, tColor));
+      surfaceColor = mix(surfaceColor, c1, smoothstep(0.4, 1.0, tColor));
 
-      vec3 finalColor = mix(colorBlack, colorBlue, intensity * sphereAlpha);
+      // Brightness multiplier = 0.8
+      surfaceColor *= 0.85;
 
-      // Add gentle top-left ambient light fill
-      float ambientTop = smoothstep(1.2, -0.3, length(uv - vec2(-0.4, 0.5)));
-      finalColor += colorBlue * ambientTop * 0.12;
+      // Mix with background black
+      vec3 finalColor = mix(vec3(0.0), surfaceColor, sphereAlpha);
+
+      // Subtle ambient fill on top-right
+      float ambient = smoothstep(1.2, 0.0, length(uv - vec2(0.3, 0.3)));
+      finalColor += c2 * ambient * 0.06;
 
       // Film grain overlay (grain: on)
-      float grain = (fract(sin(dot(gl_FragCoord.xy + fract(uTime), vec2(12.9898, 78.233))) * 43758.5453) - 0.5) * 0.04;
+      float grain = (fract(sin(dot(gl_FragCoord.xy + fract(uTime), vec2(12.9898, 78.233))) * 43758.5453) - 0.5) * 0.035;
       finalColor += vec3(grain);
 
       gl_FragColor = vec4(clamp(finalColor, 0.0, 1.0), 1.0);
@@ -171,7 +179,6 @@
     return;
   }
 
-  // Full-screen Quad geometry
   const posBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer);
   gl.bufferData(
