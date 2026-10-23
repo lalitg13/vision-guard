@@ -1,0 +1,254 @@
+[
+  {
+    "id": "evt-9c8f7a",
+    "timestamp": "2026-10-23 11:29:46",
+    "type": "Alert",
+    "person": "Unidentified Person",
+    "confidence": 25,
+    "details": "Unauthorized subject in biometric checkpoint",
+    "status": "ALERT"
+  },
+  {
+    "id": "evt-8bf483",
+    "timestamp": "2026-10-23 11:08:46",
+    "type": "Authorized",
+    "person": "Admin",
+    "confidence": 96,
+    "details": "Authorized personnel entry granted at Main Gate",
+    "status": "GRANTED"
+  },
+  {
+    "id": "evt-0fdcf9",
+    "timestamp": "2026-10-23 10:50:46",
+    "type": "Alert",
+    "person": "Unidentified Person",
+    "confidence": 41,
+    "details": "Intruder anomaly detected: unknown facial geometry",
+    "status": "ALERT"
+  },
+  {
+    "id": "evt-0c1d6f",
+    "timestamp": "2026-10-23 10:34:46",
+    "type": "Authorized",
+    "person": "Admin",
+    "confidence": 93,
+    "details": "Authorized personnel entry granted at Main Gate",
+    "status": "GRANTED"
+  },
+  {
+    "id": "evt-7f11be",
+    "timestamp": "2026-10-23 10:15:46",
+    "type": "Authorized",
+    "person": "Admin",
+    "confidence": 75,
+    "details": "Facial biometric match confirmed: Admin ID #01",
+    "status": "GRANTED"
+  },
+  {
+    "id": "evt-060309",
+    "timestamp": "2026-10-23 09:58:46",
+    "type": "Authorized",
+    "person": "Admin",
+    "confidence": 84,
+    "details": "Admin biometric access verified (LBPH confidence)",
+    "status": "GRANTED"
+  },
+  {
+    "id": "evt-908597",
+    "timestamp": "2026-10-23 09:42:46",
+    "type": "Alert",
+    "person": "Unidentified Person",
+    "confidence": 45,
+    "details": "Intruder anomaly detected: unknown facial geometry",
+    "status": "ALERT"
+  },
+  {
+    "id": "evt-f726fb",
+    "timestamp": "2026-10-23 09:30:46",
+    "type": "Authorized",
+    "person": "Admin",
+    "confidence": 86,
+    "details": "Authorized personnel entry granted at Main Gate",
+    "status": "GRANTED"
+  },
+  {
+    "id": "evt-906b4e",
+    "timestamp": "2026-10-23 09:11:46",
+    "type": "Authorized",
+    "person": "Admin",
+    "confidence": 94,
+    "details": "Facial biometric match confirmed: Admin ID #01",
+    "status": "GRANTED"
+  },
+  {
+    "id": "evt-b2c2b7",
+    "timestamp": "2026-10-23 09:00:46",
+    "type": "Authorized",
+    "person": "Admin",
+    "confidence": 87,
+    "details": "Authorized personnel entry granted at Main Gate",
+    "status": "GRANTED"
+  },
+  {
+    "id": "evt-af6149",
+    "timestamp": "2026-10-23 08:44:46",
+    "type": "Alert",
+    "person": "Unidentified Person",
+    "confidence": 39,
+    "details": "Unauthorized subject in biometric checkpoint",
+    "status": "ALERT"
+  },
+  {
+    "id": "evt-f8b33d",
+    "timestamp": "2026-10-23 08:21:46",
+    "type": "Authorized",
+    "person": "Admin",
+    "confidence": 92,
+    "details": "Facial biometric match confirmed: Admin ID #01",
+    "status": "GRANTED"
+  },
+  {
+    "id": "evt-922192",
+    "timestamp": "2026-10-23 08:09:46",
+    "type": "Authorized",
+    "person": "Admin",
+    "confidence": 82,
+    "details": "Authorized personnel entry granted at Main Gate",
+    "status": "GRANTED"
+  },
+  {
+    "id": "evt-bda5fa",
+    "timestamp": "2026-10-23 07:53:46",
+    "type": "Authorized",
+    "person": "Admin",
+    "confidence": 80,
+    "details": "Authorized personnel entry granted at Main Gate",
+    "status": "GRANTED"
+  },
+  {
+    "id": "evt-ac3719",
+    "timestamp": "2026-10-23 07:37:46",
+    "type": "Authorized",
+    "person": "Admin",
+    "confidence": 88,
+    "details": "Access authorized: Terminal Security Clear",
+    "status": "GRANTED"
+  },
+  {
+    "id": "evt-eaeb9e",
+    "timestamp": "2026-10-23 07:18:46",
+    "type": "Alert",
+    "person": "Unidentified Person",
+    "confidence": 23,
+    "details": "Unauthorized subject in biometric checkpoint",
+    "status": "ALERT"
+  },
+  {
+    "id": "evt-bcc4a8",
+    "timestamp": "2026-10-23 06:59:46",
+    "type": "Authorized",
+    "person": "Admin",
+    "confidence": 95,
+    "details": "Admin biometric access verified (LBPH confidence)",
+    "status": "GRANTED"
+  },
+  {
+    "id": "evt-ad691e",
+    "timestamp": "2026-10-23 06:49:46",
+    "type": "Authorized",
+    "person": "Admin",
+    "confidence": 87,
+    "details": "Authorized personnel entry granted at Main Gate",
+    "status": "GRANTED"
+  },
+  {
+    "id": "evt-fd77e7",
+    "timestamp": "2026-10-23 06:28:46",
+    "type": "Authorized",
+    "person": "Admin",
+    "confidence": 94,
+    "details": "Admin biometric access verified (LBPH confidence)",
+    "status": "GRANTED"
+  },
+  {
+    "id": "evt-9ee329",
+    "timestamp": "2026-10-23 06:12:46",
+    "type": "Authorized",
+    "person": "Admin",
+    "confidence": 88,
+    "details": "Authorized personnel entry granted at Main Gate",
+    "status": "GRANTED"
+  },
+  {
+    "id": "evt-2c6714",
+    "timestamp": "2026-10-23 05:54:46",
+    "type": "Alert",
+    "person": "Unidentified Person",
+    "confidence": 30,
+    "details": "Intruder anomaly detected: unknown facial geometry",
+    "status": "ALERT"
+  },
+  {
+    "id": "evt-9d099d",
+    "timestamp": "2026-10-23 05:38:46",
+    "type": "Authorized",
+    "person": "Admin",
+    "confidence": 76,
+    "details": "Admin biometric access verified (LBPH confidence)",
+    "status": "GRANTED"
+  },
+  {
+    "id": "evt-bf560c",
+    "timestamp": "2026-10-23 05:20:46",
+    "type": "Authorized",
+    "person": "Admin",
+    "confidence": 86,
+    "details": "Facial biometric match confirmed: Admin ID #01",
+    "status": "GRANTED"
+  },
+  {
+    "id": "evt-9ddf49",
+    "timestamp": "2026-10-23 05:03:46",
+    "type": "Authorized",
+    "person": "Admin",
+    "confidence": 94,
+    "details": "Authorized personnel entry granted at Main Gate",
+    "status": "GRANTED"
+  },
+  {
+    "id": "evt-a9be2f",
+    "timestamp": "2026-10-23 04:46:46",
+    "type": "Authorized",
+    "person": "Admin",
+    "confidence": 87,
+    "details": "Access authorized: Terminal Security Clear",
+    "status": "GRANTED"
+  },
+  {
+    "id": "evt-f9508b",
+    "timestamp": "2026-10-23 04:36:46",
+    "type": "Alert",
+    "person": "Unidentified Person",
+    "confidence": 39,
+    "details": "Security breach alarm: face mismatch against known database",
+    "status": "ALERT"
+  },
+  {
+    "id": "evt-9f33ba",
+    "timestamp": "2026-10-23 04:16:46",
+    "type": "Authorized",
+    "person": "Admin",
+    "confidence": 85,
+    "details": "Authorized personnel entry granted at Main Gate",
+    "status": "GRANTED"
+  },
+  {
+    "id": "evt-c2d3a1",
+    "timestamp": "2026-10-23 04:00:46",
+    "type": "Authorized",
+    "person": "Admin",
+    "confidence": 74,
+    "details": "Access authorized: Terminal Security Clear",
+    "status": "GRANTED"
+  }
+]

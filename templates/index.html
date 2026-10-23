@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VisionGuard // Biometric Security Telemetry HUD</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Top Dismissible Red Threat Banner -->
+  <aside id="alert-banner" class="alert-banner hidden" aria-live="assertive" role="alert">
+    <div class="alert-banner-content">
+      <div class="alert-icon-wrapper">
+        <span class="alert-pulse-ring"></span>
+        <span class="alert-emoji">🚨</span>
+      </div>
+      <div class="alert-banner-text">
+        <div class="alert-banner-header">
+          <span class="alert-badge">SECURITY BREACH DETECTED</span>
+          <span id="alert-banner-time" class="alert-time">--:--:--</span>
+        </div>
+        <div class="alert-banner-body">
+          <strong id="alert-banner-title">Unidentified Person in Monitored Sector</strong>
+          <span id="alert-banner-details" class="alert-details">Confidence score below verification threshold. Security protocol dispatched.</span>
+        </div>
+      </div>
+    </div>
+    <button id="alert-dismiss-btn" class="alert-dismiss" aria-label="Dismiss Alert" title="Dismiss threat alert">&times;</button>
+  </aside>
+
+  <div class="app-container">
+    <!-- Main Navigation & Command Header -->
+    <header class="app-header">
+      <div class="brand-section">
+        <div class="brand-logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <circle cx="12" cy="11" r="3"/>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title-row">
+            <h1 class="brand-title">VISIONGUARD</h1>
+            <span class="status-pill status-pill-live">
+              <span class="pulse-dot"></span> LIVE HUD
+            </span>
+          </div>
+          <p class="brand-subtitle">LOCAL BIOMETRIC RECOGNITION &amp; TELEMETRY RADAR</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button id="btn-enroll" class="btn btn-cyan" title="Enroll 20 facial crops to train LBPH model">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 7V4h3M20 7V4h-3M4 17v3h3M20 17v3h-3"/>
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 16v1M12 7v1"/>
+          </svg>
+          <span>Enroll My Face (Train LBPH)</span>
+        </button>
+
+        <button id="btn-simulate" class="btn btn-red" title="Simulate an intrusion anomaly">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          <span>Simulate Intruder Alert</span>
+        </button>
+
+        <button id="btn-reset" class="btn btn-secondary" title="Reset telemetry database to 28 seed events">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+          </svg>
+          <span>Reset Demo Data</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast hidden"></div>
+
+    <!-- KPI Telemetry Cards Row -->
+    <section class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">TOTAL LOGGED DETECTIONS</div>
+        <div class="kpi-value-row">
+          <span id="kpi-total" class="kpi-value">--</span>
+          <span class="kpi-trend">ALL TIME</span>
+        </div>
+        <div class="kpi-footnote">Aggregated across all surveillance zones</div>
+      </div>
+
+      <div class="kpi-card kpi-card-green">
+        <div class="kpi-label">AUTHORIZED ACCESS GRANTED</div>
+        <div class="kpi-value-row">
+          <span id="kpi-authorized" class="kpi-value">--</span>
+          <span class="kpi-tag kpi-tag-green">PASS</span>
+        </div>
+        <div class="kpi-footnote">Admin facial matches (LBPH &lt; 75)</div>
+      </div>
+
+      <div class="kpi-card kpi-card-red">
+        <div class="kpi-label">UNIDENTIFIED PERSON ALERTS</div>
+        <div class="kpi-value-row">
+          <span id="kpi-alerts" class="kpi-value">--</span>
+          <span class="kpi-tag kpi-tag-red">SECURITY TRIGGER</span>
+        </div>
+        <div class="kpi-footnote">Unrecognized faces or perimeter alerts</div>
+      </div>
+
+      <div class="kpi-card kpi-card-cyan">
+        <div class="kpi-label">BIOMETRIC MODEL STATUS</div>
+        <div class="kpi-value-row">
+          <span id="kpi-model-status" class="kpi-badge kpi-badge-untrained">CHECKING...</span>
+        </div>
+        <div class="kpi-footnote">Engine: OpenCV LBPH Recognizer</div>
+      </div>
+    </section>
+
+    <!-- 2-Column Responsive Main Grid -->
+    <main class="dashboard-grid">
+      <!-- Left Column: Video Feed & Analytics Chart -->
+      <div class="grid-col left-col">
+        <!-- Live Camera Feed Card -->
+        <div class="card video-card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <span class="card-dot"></span>
+              <h2 class="card-title">LIVE OPTICAL SENSOR STREAM</h2>
+              <span class="cam-id">FEED // CAM-01 [MAIN ACCESS]</span>
+            </div>
+            <div class="feed-telemetry">
+              <span class="rec-badge"><span class="rec-dot"></span> REC</span>
+              <span class="feed-resolution">640x480</span>
+            </div>
+          </div>
+
+          <div class="video-viewport">
+            <img id="video-stream" src="/video_feed" alt="VisionGuard Live Camera Stream" class="video-element" />
+            <div class="hud-crosshair-tl"></div>
+            <div class="hud-crosshair-tr"></div>
+            <div class="hud-crosshair-bl"></div>
+            <div class="hud-crosshair-br"></div>
+            <div class="hud-watermark">VISIONGUARD TELEMETRY // AI RECOGNITION ACTIVE</div>
+          </div>
+
+          <div class="card-footer">
+            <div class="footer-stat">
+              <span class="stat-dot green"></span>
+              <span>Detection: <strong>Haar Cascade</strong></span>
+            </div>
+            <div class="footer-stat">
+              <span class="stat-dot cyan"></span>
+              <span>Biometric Classifier: <strong>LBPH (100-Radius)</strong></span>
+            </div>
+            <div class="footer-stat">
+              <span class="stat-dot amber"></span>
+              <span>Rate Limit: <strong>6.0s Per Person Cooldown</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Analytics Chart Card -->
+        <div class="card analytics-card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <span class="card-dot cyan-dot"></span>
+              <h2 class="card-title">TELEMETRY &amp; THREAT METRICS</h2>
+              <span class="cam-id">HEADLESS MATPLOTLIB PIPELINE</span>
+            </div>
+            <div class="feed-telemetry">
+              <span class="refresh-indicator">
+                <span class="refresh-dot"></span> AUTO-REFRESH 4S
+              </span>
+            </div>
+          </div>
+
+          <div class="chart-viewport">
+            <img id="analytics-img" src="/api/analytics.png" alt="VisionGuard Analytics Chart" class="analytics-element" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Real-Time Activity Log -->
+      <div class="grid-col right-col">
+        <div class="card activity-card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <span class="card-dot red-dot"></span>
+              <h2 class="card-title">ACTIVITY &amp; AUDIT LOG</h2>
+            </div>
+            <div class="feed-telemetry">
+              <span id="events-count-badge" class="counter-badge">0 EVENTS</span>
+              <span id="smtp-badge" class="smtp-pill">SMTP: SIMULATED</span>
+            </div>
+          </div>
+
+          <div class="activity-filter-bar">
+            <div class="log-info-text">POLLED EVERY 2.0s &bull; REAL-TIME INCIDENT STREAM</div>
+          </div>
+
+          <div id="activity-log" class="activity-log-container">
+            <div class="loading-state">
+              <div class="spinner"></div>
+              <span>Connecting to security telemetry stream...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer System Info -->
+    <footer class="app-footer">
+      <span>VISIONGUARD SECURITY ARCHITECTURE &bull; LOCAL-FIRST COMPUTER VISION &bull; PORT 5001</span>
+      <span id="server-clock">SYSTEM TIME: --:--:--</span>
+    </footer>
+  </div>
+
+  <script src="/static/js/dashboard.js"></script>
+</body>
+</html>
