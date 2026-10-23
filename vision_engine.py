@@ -52,13 +52,31 @@ class VisionEngine:
         self._init_camera()
 
     def _init_camera(self):
-        """Attempts to initialize cv2.VideoCapture(0)."""
-        try:
-            self.cap = cv2.VideoCapture(0)
-            if not self.cap.isOpened():
-                self.cap = None
-        except Exception:
+        """Attempts to initialize camera with AVFoundation backend, trying index 0 then 1."""
+        if self.cap is not None:
+            try:
+                self.cap.release()
+            except Exception:
+                pass
             self.cap = None
+
+        for idx in (0, 1):
+            try:
+                cap = cv2.VideoCapture(idx, cv2.CAP_AVFOUNDATION)
+                if cap.isOpened():
+                    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+                    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+                    ret, test_frame = cap.read()
+                    if ret and test_frame is not None:
+                        self.cap = cap
+                        print(f"[VisionEngine] Camera connected on index {idx} ({test_frame.shape[1]}x{test_frame.shape[0]})")
+                        return True
+                    cap.release()
+            except Exception as e:
+                print(f"[VisionEngine] Warning testing camera index {idx}: {e}")
+
+        self.cap = None
+        return False
 
     def _load_existing_trainer(self):
         """Loads pre-trained LBPH weights if available."""
@@ -282,8 +300,17 @@ class VisionEngine:
 
     def generate_frames(self):
         """Yields MJPEG stream chunks for Flask route."""
+        last_retry = 0.0
         while True:
             frame = None
+            now = time.time()
+
+            # If camera not initialized, attempt retry every 2.0s
+            if self.cap is None and (now - last_retry >= 2.0):
+                last_retry = now
+                with self.lock:
+                    self._init_camera()
+
             if self.cap is not None:
                 with self.lock:
                     ret, raw_frame = self.cap.read()

@@ -252,4 +252,5 @@ def clear_events():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5001, debug=True, threaded=True)
+    # use_reloader=False prevents camera device conflict on macOS from duplicate processes
+    app.run(host="0.0.0.0", port=5001, debug=True, use_reloader=False, threaded=True)
