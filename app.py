@@ -180,6 +180,9 @@ def get_events():
             "alerts_count": alerts_count,
             "authorized_count": authorized_count,
             "model_trained": vision.model_trained,
+            "is_enrolling": getattr(vision, "is_enrolling", False),
+            "enrollment_count": getattr(vision, "enrollment_count", 0),
+            "target_samples": getattr(vision, "target_samples", 20),
         },
     })
 
@@ -207,6 +210,17 @@ def enroll():
         "status": "enrolling",
         "message": "Biometric enrollment sequence started. Look directly at camera for 20 frames.",
         "target": result.get("target", 20),
+    })
+
+
+@app.route("/api/enroll_status", methods=["GET"])
+def enroll_status():
+    """Returns real-time facial crop capture progress and model status."""
+    return jsonify({
+        "is_enrolling": getattr(vision, "is_enrolling", False),
+        "count": getattr(vision, "enrollment_count", 0),
+        "target": getattr(vision, "target_samples", 20),
+        "model_trained": getattr(vision, "model_trained", False),
     })
 
 

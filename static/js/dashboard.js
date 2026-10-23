@@ -1,20 +1,24 @@
 /**
  * VisionGuard — Dashboard Client Controller
- * Polling, live telemetry updates, threat notification handling, and biometric enrollment.
+ * Ultra-clean UI controls, real-time telemetry, threat alerts, and Add Admin Face enrollment.
  */
 
 document.addEventListener("DOMContentLoaded", () => {
-  // DOM Elements
+  // DOM Elements — Alert Banner & Feedback
   const alertBanner = document.getElementById("alert-banner");
   const alertBannerTime = document.getElementById("alert-banner-time");
   const alertBannerTitle = document.getElementById("alert-banner-title");
   const alertBannerDetails = document.getElementById("alert-banner-details");
   const alertDismissBtn = document.getElementById("alert-dismiss-btn");
+  const toast = document.getElementById("toast");
 
-  const btnEnroll = document.getElementById("btn-enroll");
+  // DOM Elements — Action Buttons
+  const btnOpenEnroll = document.getElementById("btn-open-enroll");
+  const btnCameraEnroll = document.getElementById("btn-camera-enroll");
   const btnSimulate = document.getElementById("btn-simulate");
   const btnReset = document.getElementById("btn-reset");
 
+  // DOM Elements — KPIs & Stream
   const kpiTotal = document.getElementById("kpi-total");
   const kpiAuthorized = document.getElementById("kpi-authorized");
   const kpiAlerts = document.getElementById("kpi-alerts");
@@ -25,13 +29,26 @@ document.addEventListener("DOMContentLoaded", () => {
   const eventsCountBadge = document.getElementById("events-count-badge");
   const smtpBadge = document.getElementById("smtp-badge");
   const serverClock = document.getElementById("server-clock");
-  const toast = document.getElementById("toast");
+
+  // DOM Elements — Add Admin Face Modal
+  const adminModal = document.getElementById("admin-modal");
+  const modalCloseBtn = document.getElementById("modal-close-btn");
+  const modalCancelBtn = document.getElementById("modal-cancel-btn");
+  const modalStartBtn = document.getElementById("modal-start-btn");
+  const modalDoneBtn = document.getElementById("modal-done-btn");
+  const modalProgressBox = document.getElementById("modal-progress-box");
+  const modalProgressBar = document.getElementById("modal-progress-bar");
+  const modalStatusText = document.getElementById("modal-status-text");
+  const modalCountText = document.getElementById("modal-count-text");
+  const modalSuccessBox = document.getElementById("modal-success-box");
+  const modalBackdrop = adminModal ? adminModal.querySelector(".modal-backdrop") : null;
 
   // State
   let lastSeenAlertId = null;
   let dismissedAlertId = null;
   let isPolling = false;
   let toastTimeout = null;
+  let enrollmentPollInterval = null;
 
   // -------------------------------------------------------------------------
   // Feedback Toast
@@ -44,11 +61,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (isAlert) {
       toast.style.borderColor = "rgba(244, 63, 94, 0.4)";
-      toast.style.backgroundColor = "#1a0f13";
+      toast.style.backgroundColor = "rgba(30, 8, 14, 0.95)";
       toast.style.color = "#fda4af";
     } else {
       toast.style.borderColor = "rgba(255, 255, 255, 0.15)";
-      toast.style.backgroundColor = "#181b24";
+      toast.style.backgroundColor = "rgba(18, 22, 30, 0.95)";
       toast.style.color = "#f8fafc";
     }
 
@@ -63,7 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateClock() {
     if (serverClock) {
       const now = new Date();
-      serverClock.textContent = `System Time: ${now.toLocaleTimeString()}`;
+      serverClock.textContent = `SYSTEM TIME: ${now.toLocaleTimeString()}`;
     }
   }
   setInterval(updateClock, 1000);
@@ -78,11 +95,8 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   function handleThreatAlert(latestAlert) {
-    if (!latestAlert || !latestAlert.id) {
-      return;
-    }
+    if (!latestAlert || !latestAlert.id) return;
 
-    // New alert detected that hasn't been dismissed yet
     if (latestAlert.id !== lastSeenAlertId) {
       lastSeenAlertId = latestAlert.id;
 
@@ -96,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // -------------------------------------------------------------------------
-  // Data Fetching & Metric Updates
+  // Data Fetching & Metric Updates (2s Interval)
   // -------------------------------------------------------------------------
   async function fetchEvents() {
     if (isPolling) return;
@@ -109,16 +123,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // 1. Update Metrics
       if (data.stats) {
-        kpiTotal.textContent = data.stats.total_events?.toLocaleString() || "0";
-        kpiAuthorized.textContent = data.stats.authorized_count?.toLocaleString() || "0";
-        kpiAlerts.textContent = data.stats.alerts_count?.toLocaleString() || "0";
+        if (kpiTotal) kpiTotal.textContent = data.stats.total_events?.toLocaleString() || "0";
+        if (kpiAuthorized) kpiAuthorized.textContent = data.stats.authorized_count?.toLocaleString() || "0";
+        if (kpiAlerts) kpiAlerts.textContent = data.stats.alerts_count?.toLocaleString() || "0";
 
-        if (data.stats.model_trained) {
-          kpiModelStatus.textContent = "Trained (LBPH)";
-          kpiModelStatus.className = "model-badge badge-trained";
-        } else {
-          kpiModelStatus.textContent = "Needs Enrollment";
-          kpiModelStatus.className = "model-badge badge-untrained";
+        if (kpiModelStatus) {
+          if (data.stats.model_trained) {
+            kpiModelStatus.textContent = "Trained (LBPH Active)";
+            kpiModelStatus.className = "model-badge badge-trained font-mono";
+          } else {
+            kpiModelStatus.textContent = "Untrained (Add Face)";
+            kpiModelStatus.className = "model-badge badge-untrained font-mono";
+          }
         }
       }
 
@@ -130,11 +146,11 @@ document.addEventListener("DOMContentLoaded", () => {
       if (smtpBadge && data.dispatched_emails) {
         const hasLiveGmail = data.dispatched_emails.some(d => d.mode === "GMAIL_SMTP");
         if (hasLiveGmail) {
-          smtpBadge.textContent = "Live Gmail SMTP";
+          smtpBadge.textContent = "Gmail SMTP: Active";
           smtpBadge.style.color = "#34d399";
           smtpBadge.style.borderColor = "rgba(16, 185, 129, 0.35)";
         } else {
-          smtpBadge.textContent = "Simulated SMTP";
+          smtpBadge.textContent = "SMTP: Simulated";
         }
       }
 
@@ -152,15 +168,15 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // -------------------------------------------------------------------------
-  // Activity Feed Renderer
+  // Clean Activity Feed Renderer
   // -------------------------------------------------------------------------
   function renderActivityLog(events) {
     if (!activityLog) return;
 
     if (events.length === 0) {
       activityLog.innerHTML = `
-        <div class="feed-placeholder">
-          <span>No activity recorded in the telemetry buffer.</span>
+        <div class="feed-empty font-mono">
+          <span>No security events recorded in buffer.</span>
         </div>
       `;
       return;
@@ -168,23 +184,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const html = events.map(evt => {
       const isAuth = (evt.type === "Authorized" || evt.status === "GRANTED");
-      const rowClass = isAuth ? "activity-row-authorized" : "activity-row-alert";
-      const tagClass = isAuth ? "row-tag-auth" : "row-tag-alert";
-      const tagText = isAuth ? "Authorized" : "Alert";
+      const rowClass = isAuth ? "item-auth" : "item-alert";
+      const tagClass = isAuth ? "tag-auth" : "tag-alert";
+      const tagText = isAuth ? "AUTHORIZED" : "ALERT";
       const confClass = evt.confidence >= 60 ? "conf-high" : "conf-low";
 
       return `
-        <div class="activity-row ${rowClass}">
-          <div class="row-top">
-            <div class="row-badge-group">
-              <span class="row-tag ${tagClass}">${tagText}</span>
-              <span class="row-person">${escapeHtml(evt.person || (isAuth ? "Admin" : "Unidentified"))}</span>
-              <span class="row-confidence ${confClass}">${evt.confidence}% match</span>
+        <div class="activity-item ${rowClass}">
+          <div class="item-top">
+            <div class="item-badges">
+              <span class="item-tag ${tagClass}">${tagText}</span>
+              <span class="item-name">${escapeHtml(evt.person || (isAuth ? "Admin" : "Unidentified"))}</span>
+              <span class="item-conf font-mono ${confClass}">${evt.confidence}% match</span>
             </div>
-            <span class="row-time">${escapeHtml(evt.timestamp || "")}</span>
+            <span class="font-mono text-muted text-xs">${escapeHtml(evt.timestamp || "")}</span>
           </div>
-          <div class="row-details">${escapeHtml(evt.details || "")}</div>
-          <div class="row-id">Event ID: ${escapeHtml(evt.id || "N/A")}</div>
+          <div class="item-details">${escapeHtml(evt.details || "")}</div>
+          <div class="item-footer font-mono">
+            <span>ID: ${escapeHtml(evt.id || "N/A")}</span>
+            <span>STATUS: ${escapeHtml(evt.status || (isAuth ? "GRANTED" : "ALERT"))}</span>
+          </div>
         </div>
       `;
     }).join("");
@@ -211,43 +230,128 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // -------------------------------------------------------------------------
-  // Action Button Handlers
+  // Add Admin Face Modal Workflow
   // -------------------------------------------------------------------------
+  function openAdminModal() {
+    if (!adminModal) return;
+    // Reset modal state
+    modalProgressBox?.classList.add("hidden");
+    modalSuccessBox?.classList.add("hidden");
+    modalStartBtn?.classList.remove("hidden");
+    modalDoneBtn?.classList.add("hidden");
+    if (modalProgressBar) modalProgressBar.style.width = "0%";
+    if (modalCountText) modalCountText.textContent = "0 / 20";
+    if (modalStatusText) modalStatusText.textContent = "Ready to start facial scan.";
 
-  // 1. Enroll Face
-  btnEnroll?.addEventListener("click", async () => {
+    adminModal.classList.remove("hidden");
+  }
+
+  function closeAdminModal() {
+    if (!adminModal) return;
+    adminModal.classList.add("hidden");
+    if (enrollmentPollInterval) {
+      clearInterval(enrollmentPollInterval);
+      enrollmentPollInterval = null;
+    }
+  }
+
+  // Open triggers
+  btnOpenEnroll?.addEventListener("click", openAdminModal);
+  btnCameraEnroll?.addEventListener("click", openAdminModal);
+
+  // Close triggers
+  modalCloseBtn?.addEventListener("click", closeAdminModal);
+  modalCancelBtn?.addEventListener("click", closeAdminModal);
+  modalDoneBtn?.addEventListener("click", () => {
+    closeAdminModal();
+    showToast("Administrator face enrolled successfully!");
+    fetchEvents();
+    refreshAnalytics();
+  });
+  modalBackdrop?.addEventListener("click", closeAdminModal);
+
+  // Start Enrollment Sequence
+  modalStartBtn?.addEventListener("click", async () => {
     try {
-      btnEnroll.classList.add("loading");
-      showToast("Starting face enrollment. Look directly at the camera.");
+      modalStartBtn.disabled = true;
+      modalStartBtn.style.opacity = "0.5";
+      modalProgressBox?.classList.remove("hidden");
+      modalSuccessBox?.classList.add("hidden");
 
+      if (modalStatusText) modalStatusText.textContent = "Initializing camera sensor...";
+
+      // Trigger server-side enrollment
       const res = await fetch("/api/enroll", { method: "POST" });
       const data = await res.json();
 
-      if (data.status === "enrolling") {
-        showToast("Capturing 20 face samples. Please keep looking forward.", false, 5000);
-      }
+      const target = data.target || 20;
+
+      // Start rapid status polling
+      if (enrollmentPollInterval) clearInterval(enrollmentPollInterval);
+      enrollmentPollInterval = setInterval(async () => {
+        try {
+          const statusRes = await fetch("/api/enroll_status");
+          if (!statusRes.ok) return;
+          const statusData = await statusRes.json();
+
+          const count = statusData.count || 0;
+          const percent = Math.min(100, Math.round((count / target) * 100));
+
+          if (modalProgressBar) modalProgressBar.style.width = `${percent}%`;
+          if (modalCountText) modalCountText.textContent = `${count} / ${target}`;
+
+          if (statusData.is_enrolling) {
+            if (modalStatusText) {
+              modalStatusText.textContent = `Capturing biometric samples (${count}/${target})... Please look at the camera.`;
+            }
+          } else if (statusData.model_trained || count >= target) {
+            // Finished!
+            clearInterval(enrollmentPollInterval);
+            enrollmentPollInterval = null;
+
+            if (modalProgressBar) modalProgressBar.style.width = "100%";
+            modalProgressBox?.classList.add("hidden");
+            modalSuccessBox?.classList.remove("hidden");
+            modalStartBtn?.classList.add("hidden");
+            modalDoneBtn?.classList.remove("hidden");
+
+            // Update main dashboard metrics immediately
+            fetchEvents();
+            refreshAnalytics();
+          }
+        } catch (e) {
+          console.warn("[VisionGuard] Error polling enroll status:", e);
+        }
+      }, 250);
+
     } catch (err) {
-      showToast("Unable to start enrollment sequence.", true);
+      if (modalStatusText) modalStatusText.textContent = "Failed to start camera capture.";
+      showToast("Unable to start facial scan.", true);
     } finally {
-      setTimeout(() => btnEnroll.classList.remove("loading"), 2500);
+      modalStartBtn.disabled = false;
+      modalStartBtn.style.opacity = "1";
     }
   });
 
-  // 2. Simulate Alert
+  // -------------------------------------------------------------------------
+  // Other Action Button Handlers
+  // -------------------------------------------------------------------------
+
+  // Simulate Intruder Alert
   btnSimulate?.addEventListener("click", async () => {
     try {
       const res = await fetch("/api/simulate_alert", { method: "POST" });
       const data = await res.json();
 
-      showToast("Intrusion alert simulated.", true);
+      showToast("Intrusion threat simulated and dispatched.", true);
       fetchEvents();
       refreshAnalytics();
     } catch (err) {
-      showToast("Unable to simulate alert.", true);
+      showToast("Unable to simulate intrusion alert.", true);
     }
   });
 
-  // 3. Reset Demo
+  // Reset Demo Database
   btnReset?.addEventListener("click", async () => {
     try {
       const res = await fetch("/api/clear_events", { method: "POST" });
@@ -266,7 +370,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // -------------------------------------------------------------------------
-  // Timers & Initial Ingestion
+  // Initial Ingestion & Recurring Polls
   // -------------------------------------------------------------------------
   fetchEvents();
   setInterval(fetchEvents, 2000);

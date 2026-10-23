@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VisionGuard — Digital Success Biometric Surveillance</title>
+  <title>VisionGuard — Edge Biometric Security Telemetry</title>
   <link rel="stylesheet" href="/static/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
-<body class="bg-black text-white antialiased overflow-x-hidden">
+<body class="bg-black text-white antialiased">
 
-  <!-- Atmospheric Shader Gradient Canvas (@ui-layouts/hero-digital-success) -->
+  <!-- Ambient Shader Gradient Canvas -->
   <canvas id="shader-canvas" class="shader-canvas" aria-hidden="true"></canvas>
 
-  <!-- Threat Notification Alert Banner (Top Dismissible) -->
+  <!-- Threat Notification Alert Banner (Sticky Top) -->
   <aside id="alert-banner" class="alert-banner hidden" aria-live="assertive" role="alert">
     <div class="alert-banner-inner">
       <div class="alert-banner-icon">
@@ -26,7 +26,7 @@
       </div>
       <div class="alert-banner-text">
         <div class="alert-banner-heading">
-          <span class="alert-banner-tag">Security Alert</span>
+          <span class="alert-banner-tag">Security Threat</span>
           <strong id="alert-banner-title">Unidentified Person Detected</strong>
           <span id="alert-banner-time" class="alert-banner-time">--:--:--</span>
         </div>
@@ -41,188 +41,218 @@
     </div>
   </aside>
 
-  <!-- Main Digital Success Container -->
-  <div class="relative z-10 min-h-screen flex flex-col w-full">
+  <!-- Notification Toast -->
+  <div id="toast" class="toast hidden"></div>
 
-    <!-- Header Navigation Bar -->
-    <header class="w-full border-b border-white/10 bg-black/30 backdrop-blur-md">
-      <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-cyan-300 shadow-[0_0_15px_rgba(146,219,224,0.2)]">
+  <!-- Main Application Wrapper -->
+  <div class="app-layout">
+
+    <!-- Header Navigation -->
+    <header class="navbar">
+      <div class="navbar-container">
+        
+        <!-- Brand -->
+        <div class="brand">
+          <div class="brand-badge">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
               <circle cx="12" cy="11" r="3"/>
             </svg>
           </div>
-          <div class="flex items-center gap-2">
-            <span class="font-semibold text-lg tracking-tight text-white">VisionGuard</span>
-            <span class="text-[10px] font-mono px-2 py-0.5 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-300">Edge 2.0</span>
+          <div class="brand-info">
+            <div class="brand-title-row">
+              <span class="brand-title">VisionGuard</span>
+              <span class="status-indicator">
+                <span class="pulse-dot"></span>
+                <span>Live HUD</span>
+              </span>
+            </div>
+            <span class="brand-subtext">Local-First Biometric Telemetry &bull; Port 5001</span>
           </div>
         </div>
 
-        <div class="flex items-center gap-3">
-          <button id="status-pill-btn" class="flex items-center gap-2 px-5 py-2 rounded-full font-medium text-xs bg-neutral-900 border border-neutral-700/60 text-white shadow-sm">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse"></span>
-            <span>Live Surveillance</span>
-          </button>
-        </div>
-      </div>
-    </header>
-
-    <!-- Feedback Toast -->
-    <div id="toast" class="toast hidden"></div>
-
-    <!-- Main Hero Digital Success Stage -->
-    <div class="max-w-7xl mx-auto px-6 pt-16 pb-12 w-full flex flex-col justify-center">
-
-      <!-- Hero Headline with Digital Success Gradient -->
-      <h1 class="flex flex-col xl:flex-row text-[9vw] xl:text-[5.2vw] font-medium leading-[100%] items-baseline gap-x-5 gap-y-2 pb-6 text-white tracking-tight">
-        Unlocking
-        <span class="bg-clip-text text-transparent bg-gradient-to-r from-white via-cyan-300 to-blue-500 pb-2 xl:inline-block block">
-          Digital Defense
-        </span>
-      </h1>
-
-      <!-- Action Pill Buttons & Agency-Style Description -->
-      <div class="flex flex-col lg:flex-row items-start lg:items-center gap-8 mb-12">
-        <div class="flex flex-wrap justify-start gap-4">
-          <button id="btn-enroll" class="cursor-pointer relative group overflow-hidden bg-white text-black px-7 py-3.5 rounded-full font-medium text-sm flex items-center gap-2.5 shadow-[0_0_24px_rgba(146,219,224,0.4)] hover:bg-neutral-200 transition">
+        <!-- Action Controls -->
+        <div class="header-actions">
+          
+          <!-- Add Admin Face Primary Button -->
+          <button id="btn-open-enroll" class="btn btn-primary" title="Add Admin Face to train local LBPH classifier">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 7V4h3M20 7V4h-3M4 17v3h3M20 17v3h-3"/>
-              <circle cx="12" cy="12" r="3"/>
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <line x1="19" y1="8" x2="19" y2="14"/>
+              <line x1="22" y1="11" x2="16" y2="11"/>
             </svg>
-            <span>Enroll Administrator</span>
+            <span>Add Admin Face</span>
           </button>
 
-          <button id="btn-simulate" class="cursor-pointer border border-white/20 bg-white/5 backdrop-blur-md px-6 py-3.5 rounded-full font-medium text-sm hover:bg-white/10 transition text-white flex items-center gap-2">
+          <!-- Simulate Intruder -->
+          <button id="btn-simulate" class="btn btn-ghost" title="Simulate an intrusion event">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"/>
-              <line x1="12" y1="8" x2="12" y2="12"/>
-              <line x1="12" y1="16" x2="12.01" y2="16"/>
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
             </svg>
             <span>Simulate Intrusion</span>
           </button>
 
-          <button id="btn-reset" class="cursor-pointer border border-white/10 bg-white/5 backdrop-blur-md px-5 py-3.5 rounded-full font-medium text-sm hover:bg-white/10 transition text-neutral-400 flex items-center gap-2">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- Reset Demo -->
+          <button id="btn-reset" class="btn btn-subtle" title="Reset demo telemetry">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
               <path d="M3 3v5h5"/>
             </svg>
-            <span>Reset Demo</span>
+            <span>Reset</span>
           </button>
-        </div>
 
-        <p class="max-w-md text-neutral-200 text-base font-light leading-relaxed">
-          Autonomous edge computer vision with live biometric recognition, on-the-fly model enrollment, and real-time security telemetry.
-        </p>
+        </div>
       </div>
+    </header>
 
-      <!-- Hero Digital Success Footer Stats Grid -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4 bg-black/35 backdrop-blur-xl border border-white/10 p-6 rounded-2xl w-full mb-12 shadow-2xl">
-        <div>
-          <p class="text-white text-sm font-medium mb-1">Total Detections</p>
-          <p class="text-3xl font-semibold font-mono text-white tracking-tight" id="kpi-total">--</p>
-          <p class="text-neutral-400 text-xs mt-1">Processed facial crops</p>
-        </div>
-        <div>
-          <p class="text-white text-sm font-medium mb-1">Authorized Access</p>
-          <p class="text-3xl font-semibold font-mono text-emerald-400 tracking-tight" id="kpi-authorized">--</p>
-          <p class="text-neutral-400 text-xs mt-1">Verified administrator</p>
-        </div>
-        <div>
-          <p class="text-white text-sm font-medium mb-1">Security Alerts</p>
-          <p class="text-3xl font-semibold font-mono text-rose-400 tracking-tight" id="kpi-alerts">--</p>
-          <p class="text-neutral-400 text-xs mt-1">Unrecognized subjects</p>
-        </div>
-        <div>
-          <p class="text-white text-sm font-medium mb-1">Biometric Model</p>
-          <div class="mt-1">
-            <span id="kpi-model-status" class="model-badge badge-pending">Checking...</span>
+    <!-- Content Stage -->
+    <main class="main-content">
+      
+      <!-- Top Metrics Row -->
+      <section class="kpi-grid">
+        
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">Total Detections</span>
+            <span class="kpi-tag font-mono">Telemetry</span>
           </div>
-          <p class="text-neutral-400 text-xs mt-1">Local LBPH Weights</p>
+          <div class="kpi-value-row">
+            <span id="kpi-total" class="kpi-value font-mono">--</span>
+          </div>
+          <p class="kpi-desc">Aggregated facial detections</p>
         </div>
-      </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">Authorized Access</span>
+            <span class="kpi-tag kpi-tag-success font-mono">Verified</span>
+          </div>
+          <div class="kpi-value-row">
+            <span id="kpi-authorized" class="kpi-value text-emerald font-mono">--</span>
+          </div>
+          <p class="kpi-desc">Admin biometric matches</p>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">Security Alerts</span>
+            <span class="kpi-tag kpi-tag-danger font-mono">Flagged</span>
+          </div>
+          <div class="kpi-value-row">
+            <span id="kpi-alerts" class="kpi-value text-rose font-mono">--</span>
+          </div>
+          <p class="kpi-desc">Unrecognized faces or breaches</p>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">LBPH Model Status</span>
+            <span class="kpi-tag font-mono">Local Weights</span>
+          </div>
+          <div class="kpi-value-row">
+            <span id="kpi-model-status" class="model-badge badge-pending font-mono">Checking...</span>
+          </div>
+          <p class="kpi-desc">OpenCV facial recognizer</p>
+        </div>
+
+      </section>
 
       <!-- Main Operational Console (2-Columns) -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
-        
-        <!-- Left: Live Optical Ingestion & Analytics Chart -->
-        <div class="lg:col-span-7 flex flex-col gap-6">
+      <div class="console-grid">
+
+        <!-- Left: Live Optical Ingestion & Analytics -->
+        <div class="console-col left-col">
           
           <!-- Live Camera Panel -->
-          <div class="glass-panel">
+          <div class="panel">
             <div class="panel-header">
-              <div class="flex items-center gap-2.5">
-                <div class="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(146,219,224,0.8)]"></div>
-                <h2 class="text-sm font-semibold tracking-tight text-white">Live Camera Ingestion</h2>
-                <span class="text-xs text-neutral-400 font-mono">CAM_01</span>
+              <div class="panel-title-wrap">
+                <span class="live-dot"></span>
+                <h2 class="panel-title">Live Camera Stream</h2>
+                <span class="panel-badge font-mono">CAM-01</span>
               </div>
-              <div class="flex items-center gap-2">
-                <span class="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-neutral-300">640 &times; 480</span>
-                <span class="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300">Live Stream</span>
+              <div class="panel-actions">
+                <span class="panel-chip font-mono">640 &times; 480</span>
+                <button id="btn-camera-enroll" class="btn btn-inline-enroll" title="Quickly enroll admin face from camera">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                  </svg>
+                  <span>Add Admin Face</span>
+                </button>
               </div>
             </div>
 
-            <div class="video-stage">
-              <img id="video-stream" src="/video_feed" alt="Live optical sensor stream" class="video-feed-element" />
+            <!-- Video Viewport -->
+            <div class="video-container">
+              <img id="video-stream" src="/video_feed" alt="Live optical sensor feed" class="video-feed" />
+              <div class="corner corner-tl"></div>
+              <div class="corner corner-tr"></div>
+              <div class="corner corner-bl"></div>
+              <div class="corner corner-br"></div>
             </div>
 
             <div class="panel-footer">
-              <div class="flex items-center gap-2 text-xs text-neutral-400">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                <span>Detector: <strong class="text-neutral-200">Haar Cascade</strong></span>
+              <div class="footer-chip">
+                <span class="chip-dot dot-emerald"></span>
+                <span>Detector: <strong>Haar Cascade</strong></span>
               </div>
-              <div class="flex items-center gap-2 text-xs text-neutral-400">
-                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
-                <span>Classifier: <strong class="text-neutral-200">LBPH (R=1, P=8)</strong></span>
+              <div class="footer-chip">
+                <span class="chip-dot dot-cyan"></span>
+                <span>Classifier: <strong>LBPH Model</strong></span>
               </div>
-              <div class="flex items-center gap-2 text-xs text-neutral-400">
-                <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-                <span>Cooldown: <strong class="text-neutral-200">6.0s Per Person</strong></span>
+              <div class="footer-chip">
+                <span class="chip-dot dot-amber"></span>
+                <span>Rate Limit: <strong>6.0s Cooldown</strong></span>
               </div>
             </div>
           </div>
 
-          <!-- Headless Analytics Chart Panel -->
-          <div class="glass-panel">
+          <!-- Telemetry & Threat Trends Panel -->
+          <div class="panel">
             <div class="panel-header">
-              <div class="flex items-center gap-2.5">
-                <div class="w-2 h-2 rounded-full bg-blue-400"></div>
-                <h2 class="text-sm font-semibold tracking-tight text-white">Telemetry &amp; Threat Analytics</h2>
+              <div class="panel-title-wrap">
+                <span class="chip-dot dot-blue"></span>
+                <h2 class="panel-title">Telemetry &amp; Threat Analytics</h2>
               </div>
-              <div class="flex items-center gap-1.5 text-xs text-neutral-400 font-mono">
-                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
-                <span>Auto-refresh 4s</span>
+              <div class="panel-actions">
+                <span class="auto-refresh font-mono">
+                  <span class="refresh-indicator"></span>
+                  <span>Auto-refresh 4s</span>
+                </span>
               </div>
             </div>
 
-            <div class="p-3 bg-neutral-950/40">
-              <img id="analytics-img" src="/api/analytics.png" alt="Headless telemetry chart" class="chart-element" />
+            <div class="chart-wrapper">
+              <img id="analytics-img" src="/api/analytics.png" alt="Biometric detection frequency and confidence trends chart" class="chart-image" />
             </div>
           </div>
 
         </div>
 
         <!-- Right: Activity & Audit Feed -->
-        <div class="lg:col-span-5 flex flex-col">
-          <div class="glass-panel h-full flex flex-col">
+        <div class="console-col right-col">
+          <div class="panel h-full">
             <div class="panel-header">
-              <div class="flex items-center gap-2.5">
-                <div class="w-2 h-2 rounded-full bg-rose-400"></div>
-                <h2 class="text-sm font-semibold tracking-tight text-white">Activity Log</h2>
+              <div class="panel-title-wrap">
+                <span class="chip-dot dot-rose"></span>
+                <h2 class="panel-title">Activity Log</h2>
               </div>
-              <div class="flex items-center gap-2">
-                <span id="events-count-badge" class="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-neutral-300">0 events</span>
-                <span id="smtp-badge" class="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300">Simulated SMTP</span>
+              <div class="panel-actions">
+                <span id="events-count-badge" class="panel-chip font-mono">0 events</span>
+                <span id="smtp-badge" class="panel-chip font-mono chip-blue">SMTP: Simulated</span>
               </div>
             </div>
 
-            <div class="px-5 py-2.5 border-b border-white/5 bg-neutral-950/40 text-[11px] text-neutral-400 font-mono">
-              REAL-TIME DETECTION STREAM &bull; POLLED EVERY 2.0s
+            <div class="feed-info-bar font-mono">
+              REAL-TIME DETECTION EVENTS &bull; POLLED EVERY 2.0s
             </div>
 
-            <div id="activity-log" class="activity-feed-scroll">
-              <div class="flex flex-col items-center justify-center py-16 text-neutral-500 text-xs font-mono gap-3">
+            <div id="activity-log" class="activity-feed">
+              <div class="feed-empty">
                 <div class="spinner"></div>
                 <span>Connecting to telemetry stream...</span>
               </div>
@@ -232,11 +262,103 @@
 
       </div>
 
-      <!-- Application Footer -->
-      <footer class="w-full mt-16 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between text-xs text-neutral-500 font-mono gap-4">
-        <div>VisionGuard &bull; Local Biometric Defense &bull; Port 5001</div>
+      <!-- App Footer -->
+      <footer class="app-footer font-mono">
+        <div>VisionGuard &bull; Edge Facial Recognition &amp; Security Radar</div>
         <div id="server-clock">SYSTEM TIME: --:--:--</div>
       </footer>
+
+    </main>
+  </div>
+
+  <!-- =========================================================================
+       Add Admin Face Interactive Modal Dialog
+       ========================================================================= -->
+  <div id="admin-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-backdrop"></div>
+    <div class="modal-card">
+      
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="modal-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <line x1="19" y1="8" x2="19" y2="14"/>
+              <line x1="22" y1="11" x2="16" y2="11"/>
+            </svg>
+          </div>
+          <div>
+            <h3 id="modal-title" class="modal-title">Add Admin Face</h3>
+            <p class="modal-subtitle">Train the local LBPH recognizer with your facial signature.</p>
+          </div>
+        </div>
+        <button id="modal-close-btn" class="modal-close" aria-label="Close dialog">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body">
+        
+        <!-- Step instructions -->
+        <div class="modal-steps">
+          <div class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-desc">Position your face clearly inside the live camera frame.</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-desc">Keep standard indoor lighting and look directly at the optical sensor.</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-desc">Click <strong>Start Biometric Capture</strong> to record 20 facial samples.</div>
+          </div>
+        </div>
+
+        <!-- Progress Box -->
+        <div id="modal-progress-box" class="modal-progress-box hidden">
+          <div class="progress-labels font-mono">
+            <span id="modal-status-text">Capturing facial samples...</span>
+            <span id="modal-count-text">0 / 20</span>
+          </div>
+          <div class="progress-track">
+            <div id="modal-progress-bar" class="progress-bar-fill" style="width: 0%;"></div>
+          </div>
+          <p id="modal-help-text" class="modal-help-text">Please remain still while the camera registers your biometric features.</p>
+        </div>
+
+        <!-- Success Box -->
+        <div id="modal-success-box" class="modal-success-box hidden">
+          <div class="success-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div>
+            <h4 class="text-white font-semibold text-sm">Face Enrolled Successfully</h4>
+            <p class="text-neutral-400 text-xs mt-0.5">The LBPH model has been trained and saved to local weights.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer">
+        <button id="modal-cancel-btn" class="btn btn-subtle">Cancel</button>
+        <button id="modal-start-btn" class="btn btn-primary">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+          </svg>
+          <span>Start Biometric Capture</span>
+        </button>
+        <button id="modal-done-btn" class="btn btn-primary hidden">Done</button>
+      </div>
 
     </div>
   </div>
