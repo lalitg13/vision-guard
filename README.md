@@ -1,317 +1,385 @@
 <div align="center">
 
 # VisionGuard
-### Real-Time Facial Biometrics and Security Telemetry Dashboard
+
+A local-first face recognition and security dashboard. The webcam frame, the face model, the event log, and the charts all stay on the computer running the app.
 
 [![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
-[![OpenCV](https://img.shields.io/badge/OpenCV-5.0%20%2F%204.10-5C3EE8?style=flat-square&logo=opencv&logoColor=white)](https://opencv.org)
-[![Flask](https://img.shields.io/badge/Flask-3.1%2B-000000?style=flat-square&logo=flask&logoColor=white)](https://palletsprojects.com/p/flask/)
+[![OpenCV](https://img.shields.io/badge/OpenCV-4.10%2B-5C3EE8?style=flat-square&logo=opencv&logoColor=white)](https://opencv.org)
+[![Flask](https://img.shields.io/badge/Flask-3.0%2B-000000?style=flat-square&logo=flask&logoColor=white)](https://palletsprojects.com/p/flask/)
 [![Matplotlib](https://img.shields.io/badge/Matplotlib-3.9%2B-11557C?style=flat-square&logo=python&logoColor=white)](https://matplotlib.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 
-*A local-first facial recognition and telemetry monitoring system built with OpenCV, Flask, and Matplotlib. Runs entirely on CPU with zero cloud dependencies or external data transmission.*
+`python app.py` → open **http://localhost:5001**
 
 </div>
 
----
+## See it
 
-## Table of Contents
-- [Overview](#overview)
-- [System Architecture](#system-architecture)
-- [Interface and Visual Output](#interface-and-visual-output)
-- [Computer Vision Pipeline](#computer-vision-pipeline)
-  - [Haar Cascade Face Localization](#haar-cascade-face-localization)
-  - [Local Binary Patterns Histograms (LBPH)](#local-binary-patterns-histograms-lbph)
-  - [Biometric Decision Boundary](#biometric-decision-boundary)
-  - [Live Biometric Enrollment](#live-biometric-enrollment)
-- [Event Management and Alert Dispatching](#event-management-and-alert-dispatching)
-  - [Anti-Flood Cooldown Logic](#anti-flood-cooldown-logic)
-  - [Alert Dispatch Modes](#alert-dispatch-modes)
-- [Headless Analytics Engine](#headless-analytics-engine)
-- [Performance and Benchmarks](#performance-and-benchmarks)
-- [REST API Reference](#rest-api-reference)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-  - [Running the Server](#running-the-server)
-- [Project Structure](#project-structure)
+Dashboard captured with no webcam connected. The video panel is the offline frame drawn by `vision_engine.py`, and the text on that frame is `CAMERA STREAM OFFLINE / CHECK PERMISSIONS`. The summary cards, threat banner, activity log, and chart are filled from `data/events.json`, which ships with the repo as generated sample history.
+
+![VisionGuard dashboard with the camera offline, KPI cards, activity log, and telemetry chart](assets/dashboard_overview.png)
+
+The vision engine draws a badge on each detected face. Green means the LBPH distance is under 75 (`ACCESS GRANTED: Admin`). Red means the face is unknown, or the model has not been trained yet (`ALERT: UNIDENTIFIED PERSON`). Cyan is used while enrollment crops are being captured (`ENROLLING: N/20`). The picture below is a layout sample of those badges: the labels and colors match the engine, and the faces are placeholders.
+
+![Illustration of the green authorized and red unidentified HUD badges with placeholder faces](assets/visionguard_hud_stream.png)
+
+`analytics.py` draws this two-panel figure in memory. The dashboard asks for a new copy every 4 seconds. The left panel is hourly counts over the last 8 hours. The right panel is a confidence series of up to 15 events. This file is a sample of that figure.
+
+![Dark telemetry chart of hourly detections and a confidence series](assets/telemetry_analytics.png)
+
+## Contents
+
+- [Why this app exists](#why-this-app-exists)
+- [What you can do in the dashboard](#what-you-can-do-in-the-dashboard)
+- [Haar face detection](#haar-face-detection)
+- [LBPH recognition and the distance-75 rule](#lbph-recognition-and-the-distance-75-rule)
+- [Enrollment of 20 crops](#enrollment-of-20-crops)
+- [Six-second alert cooldown](#six-second-alert-cooldown)
+- [Event log](#event-log)
+- [Optional Gmail alerts and simulated alerts](#optional-gmail-alerts-and-simulated-alerts)
+- [Headless Matplotlib telemetry](#headless-matplotlib-telemetry)
+- [Architecture and data flow](#architecture-and-data-flow)
+- [REST API](#rest-api)
+- [Project structure](#project-structure)
+- [Install and run](#install-and-run)
 - [License](#license)
 
----
+## Why this app exists
 
-## Overview
+VisionGuard is a student portfolio project that puts a whole security-dashboard loop in one local Python process.
 
-VisionGuard is a real-time surveillance and biometric telemetry dashboard designed to operate completely at the edge. Many modern security systems route video streams through cloud providers for inference, introducing latency, recurring API costs, and serious privacy risks.
+A lot of face APIs want the picture uploaded, then return a name from someone else's servers. This app takes the other path. `app.py` starts a Flask server. `vision_engine.py` opens the webcam, finds faces, and compares them to one enrolled admin. Matches and unidentified faces are written to `data/events.json` on disk. `analytics.py` turns that file's rows into a chart. `alerts.py` can email an unidentified event through Gmail, or print the same alert in the terminal when no mail account is configured.
 
-VisionGuard addresses this by keeping the entire computer vision, analytics, and alerting pipeline local to the machine:
-* **Fully Local Inference:** Facial detection and identity verification run locally on CPU at 30 to 70+ FPS without external network requests.
-* **On-the-Fly Biometric Enrollment:** Administrators can enroll their face directly through the live camera feed. The engine captures 20 normalized grayscale face crops, fits an LBPH model, and writes weights to disk within a second.
-* **Annotated Security HUD:** Real-time visual bounding boxes and telemetry badges display identification status, confidence scores, and system states directly over the video stream.
-* **Intelligent Event Throttling:** An isolated 6-second cooldown prevents mailbox spam and database bloat when a subject remains in front of the lens.
-* **Headless Visual Analytics:** A background Matplotlib service renders dark-mode rolling 8-hour activity comparisons and confidence trend lines directly into memory.
+The point of the project is to show that pipeline end to end: capture, detect, recognize, draw a result on the frame, log it, chart it, and optionally notify. It is one admin, one classical model, and a dashboard you can click through. The log that ships in the repository is generated sample text so the page is populated before anyone enrolls a face.
 
----
+Camera frames stay in this process. They are encoded as JPEG only to paint the `<img>` on the local page. The HTML does load Geist, Geist Mono, and Plus Jakarta Sans from Google Fonts. The animated background is a WebGL shader in `static/js/shader-canvas.js` and does not call out to a network.
 
-## System Architecture
+## What you can do in the dashboard
 
-The application is structured into four decoupled layers: optical ingestion, biometric inference, telemetry logging/alerting, and the Flask presentation service.
+The page at `/` is `templates/index.html`. `static/js/dashboard.js` polls `GET /api/events` every 2 seconds and replaces the chart image every 4 seconds with `GET /api/analytics.png?t=...` so the browser does not reuse a cached PNG.
 
-<div align="center">
-  <img src="assets/architecture_diagram.svg" alt="VisionGuard System Architecture Diagram" width="100%" />
-</div>
+Four summary cards read `stats` from that poll:
 
-```
-[Webcam Sensor /dev/video0] ───────────────┐
-                                           ▼
-                                 [cv2.VideoCapture]
-                                           │
-                                 [Haar Frontal Cascade]
-                                           │
-                           ┌───────────────┴───────────────┐
-                           ▼                               ▼
-                 [Admin Distance < 75]           [Intruder Distance >= 75]
-                           │                               │
-                 [Emerald Green HUD]             [Crimson Red HUD]
-                           │                               │
-                           └───────────────┬───────────────┘
-                                           ▼
-                               [6.0s Cooldown Limiter]
-                                           │
-                     ┌─────────────────────┴─────────────────────┐
-                     ▼                                           ▼
-            [events.json Ledger]                     [AlertDispatcher]
-                     │                               (Gmail SSL / Simulated)
-                     ▼
-       [Headless Matplotlib (Agg)]
-                     │
-                     ▼
-       [Flask MJPEG Stream + REST API]
-                     │
-                     ▼
-       [Zinc/Slate Security HUD Web UI]
-```
+| Card | Source |
+| :--- | :--- |
+| Total Detections | `stats.total_events`, the full length of the in-memory list |
+| Authorized Access | rows whose `type` is `Authorized` or whose `status` is `GRANTED` |
+| Security Alerts | rows whose `type` is `Alert` or whose `status` is `ALERT` |
+| LBPH Model Status | `Trained (LBPH Active)` when `data/trainer.yml` loaded, otherwise `Untrained (Add Face)` |
 
----
+The activity list renders the newest 35 rows. Each row shows a tag (`AUTHORIZED` or `ALERT`), the person name, a match percentage, the timestamp, the detail string, the event id, and the status. The small badge in the panel header counts how many rows came back in that response (at most 35), while the Total Detections card counts the whole file.
 
-## Interface and Visual Output
+If the newest alert id changes, a banner appears at the top: person name, timestamp, detail text, and match score. Dismiss hides that id until a different alert arrives. **Reset** clears the dismissed id, hides the banner, and the next poll can show the banner again for whatever alert is now first in the new sample log.
 
-### 1. Optical Feed and HUD Overlays (`/video_feed`)
-The camera feed processes incoming frames and draws color-coded reticles:
-* **Authorized Admin (Emerald Green):** Rendered when LBPH distance is under 75 (`ACCESS GRANTED: Admin (XX%)`).
-* **Unidentified Person (Crimson Red):** Rendered when an unknown face is detected or when the model is untrained (`ALERT: UNIDENTIFIED PERSON`).
-* **Enrolling Subject (Cyan):** Active during biometric enrollment (`ENROLLING: X/20`).
+The camera panel is labeled `CAM-01` and `640 × 480`. That `640 × 480` label is written in the HTML. It matches the width and height the capture code requests from the webcam. The footer under the video names the three settings the engine actually uses: Haar Cascade, LBPH Model, and a 6.0s cooldown.
 
-<div align="center">
-  <img src="assets/visionguard_hud_stream.png" alt="VisionGuard Camera HUD Stream" width="92%" />
-</div>
+Three buttons sit in the header:
 
-### 2. Telemetry and Trend Visualizer (`/api/analytics.png`)
-The analytics module renders a two-part telemetry figure and streams it directly as raw PNG bytes. It auto-refreshes in the dashboard every 4 seconds:
+* **Add Admin Face** opens the enrollment dialog (also available on the camera panel).
+* **Simulate Intrusion** sends `POST /api/simulate_alert`. That inserts one sample unidentified row and runs the alert dispatcher. It does not read the camera.
+* **Reset** sends `POST /api/clear_events`. That replaces `data/events.json` with 28 newly generated sample rows and clears the in-memory email history.
 
-<div align="center">
-  <img src="assets/telemetry_analytics.png" alt="VisionGuard Telemetry Analytics Chart" width="92%" />
-</div>
+## Haar face detection
 
----
+Face finding is OpenCV's frontal Haar cascade, not a neural detector.
 
-## Computer Vision Pipeline
+On startup `VisionEngine` loads `haarcascade_frontalface_default.xml` from OpenCV's `cv2.data.haarcascades` path. If that classifier comes back empty, it loads the copy stored at `data/haarcascade_frontalface_default.xml`. The repository includes that file so the detector still has a cascade when the package data path is missing.
 
-### Haar Cascade Face Localization
-Face detection uses boosted cascades of simple Haar-like features:
+For every camera frame the engine converts BGR to grayscale and calls `detectMultiScale` with the values in `process_frame`:
 
-$$\Delta = \sum_{\text{black}} I(x, y) - \sum_{\text{white}} I(x, y)$$
+| Argument | Value in this repo | What it changes |
+| :--- | :--- | :--- |
+| `scaleFactor` | `1.15` | Each pass of the image pyramid is 15% smaller than the previous pass |
+| `minNeighbors` | `5` | A box is kept when at least five overlapping detections agree |
+| `minSize` | `(80, 80)` | Boxes smaller than 80×80 pixels are dropped |
 
-* **Scale Factor:** `1.15` (reduces frame size by 15% per pyramid scale to balance speed and detection rate).
-* **Min Neighbors:** `5` (requires 5 overlapping candidate rectangles to accept a face candidate, discarding noise).
-* **Min Bounding Box Size:** `(80, 80)` pixels.
+There is no call to histogram equalization. The grayscale crop is resized to `200×200` and that array is what both enrollment and recognition use. A resize failure skips that box and continues with the next face.
 
-### Local Binary Patterns Histograms (LBPH)
-While deep learning models (such as ResNet or MobileNet embeddings) offer high accuracy, they require significant compute or GPU acceleration. LBPH was selected because it is lightweight, runs in roughly 1 to 2 milliseconds per face on CPU, and works reliably with small sample sizes.
+The running code does not draw faces when the camera is missing. It draws the offline frame instead: a `640×480` grid, a top bar reading `VISIONGUARD // SYSTEM OFFLINE` plus the current time, and a red rectangle whose main line is `CAMERA STREAM OFFLINE / CHECK PERMISSIONS`.
 
-For each pixel $p_c$ in the normalized $200\times 200$ face crop, an 8-neighbor circular neighborhood $(P=8, R=1)$ is evaluated:
+## LBPH recognition and the distance-75 rule
 
-$$LBP(x_c, y_c) = \sum_{p=0}^{P-1} s(i_p - i_c) \cdot 2^p \quad \text{where} \quad s(x) = \begin{cases} 1 & x \ge 0 \\ 0 & x < 0 \end{cases}$$
-
-The resulting LBP feature map is divided into an $8\times 8$ grid of spatial cells. Local histograms from each cell are concatenated into a single spatial histogram vector that captures micro-textures (pores, edges) alongside macro-geometry (relative eye and nose spacing).
-
-### Biometric Decision Boundary
-During evaluation, the test histogram $\mathcal{H}_1$ is compared against the stored administrator histogram $\mathcal{H}_2$ using Chi-Square distance:
-
-$$D(\mathcal{H}_1, \mathcal{H}_2) = \sqrt{\sum_{i=1}^{n} \frac{(\mathcal{H}_1(i) - \mathcal{H}_2(i))^2}{\mathcal{H}_1(i) + \mathcal{H}_2(i)}}$$
-
-* **Classification Rule:**
-  $$\text{Classification} = \begin{cases} \text{Authorized (Admin)} & D < 75 \\ \text{Unidentified (Alert)} & D \ge 75 \end{cases}$$
-* **Confidence Score Mapping:**
-  $$\text{Confidence (\%)} = \text{clamp}\left(100 - (D \times 0.45), 60\%, 99\%\right)$$
-
-### Live Biometric Enrollment
-Clicking **Enroll My Face** in the dashboard initiates the enrollment sequence:
-1. Detects facial bounding box coordinates $(x, y, w, h)$.
-2. Converts the region to grayscale and resizes it to $200\times 200$ pixels.
-3. Saves crops to `data/known_faces/admin_{1..20}.jpg`.
-4. Trains the LBPH recognizer with label vector $\mathbf{y} = \mathbf{1}^{20}$.
-5. Writes the resulting model parameters to `data/trainer.yml`.
-
----
-
-## Event Management and Alert Dispatching
-
-### Anti-Flood Cooldown Logic
-Surveillance streams process between 20 and 30 frames per second. If an unrecognized person stands in front of the lens for 4 seconds, an unthrottled loop would fire roughly 100 alert events. 
-
-VisionGuard maintains independent state clocks for each classification class:
+Recognition uses `cv2.face.LBPHFaceRecognizer`, which is why `requirements.txt` asks for `opencv-contrib-python` rather than the base `opencv-python` package. LBPH (local binary patterns histograms) is a classical CPU method. This project trains it on one person.
 
 ```python
+self.recognizer = cv2.face.LBPHFaceRecognizer_create()
+```
+
+The call passes no radius, neighbor count, or grid size, so OpenCV's default LBPH settings apply. After training, or after a successful `recognizer.read("data/trainer.yml")`, `model_trained` is true.
+
+`predict` returns a label and a distance. The label is unpacked and never read. Every training label in this repo is `1`, and the decision rule does not look at it. The rule is only the distance:
+
+* Distance under 75, and a model is loaded: authorized admin.
+* Distance 75 or higher: unidentified.
+* `predict` raises: the code sets the distance to `999`, which fails the `< 75` test, and the face is unidentified.
+* No `trainer.yml` yet: the recognizer is skipped and every detected face is unidentified.
+
+The percentage printed on a green badge is a display mapping of that distance. Lower distance produces a higher number. It is clamped into the 60–99 range:
+
+```text
+confidence = clamp(100 - (distance * 0.45), 60, 99)
+```
+
+At distance 0 the badge shows 99%. A distance just under 75 lands in the mid-60s. Unidentified faces from the live loop do not use this mapping. Those log rows store a fixed confidence of `32`. The red badge text is `ALERT: UNIDENTIFIED PERSON` and does not include a percentage.
+
+Colors passed to the drawer are BGR tuples from `process_frame`:
+
+| State | Badge text | BGR color |
+| :--- | :--- | :--- |
+| Authorized | `ACCESS GRANTED: Admin (NN%)` | `(129, 185, 16)` |
+| Unidentified | `ALERT: UNIDENTIFIED PERSON` | `(40, 40, 220)` |
+| Enrolling | `ENROLLING: N/20` | `(255, 255, 0)` |
+
+`_draw_hud_box` strokes a rectangle of thickness 2 around the face, then draws corner brackets. Each bracket is `min(18, width/4, height/4)` pixels long and 3 pixels thick. A filled badge sits just above the box, with the label in a dark color so it stays readable on the bright fill.
+
+Several faces in one frame are handled in order. The first face that passes a cooldown check stamps that class's clock, so a second face of the same class in the same frame does not write a second log row.
+
+## Enrollment of 20 crops
+
+Enrollment teaches the single admin identity from the live camera. It needs a webcam and a face the cascade can see. The buttons only open a dialog. **Start Biometric Capture** is what calls the server.
+
+![Add Admin Face dialog with the three capture steps](assets/enroll_modal.png)
+
+The dialog copy asks you to face the camera, use ordinary indoor light, and record 20 samples. After **Start Biometric Capture**:
+
+1. The browser sends `POST /api/enroll`.
+2. `start_enrollment` sets `is_enrolling`, zeroes the count, and clears the sample list. The target is `20`.
+3. The dialog polls `GET /api/enroll_status` every 250ms and moves a progress bar from `count / target`.
+4. On each camera frame, every detected face while `is_enrolling` is true is resized to `200×200`, written to `data/known_faces/admin_N.jpg`, and appended to the in-memory sample list. The HUD shows `ENROLLING: N/20`.
+5. When the count reaches 20, `_finish_enrollment` builds a label array of ones (`np.ones`, dtype `int32`) and calls `recognizer.train`.
+6. Weights are saved with `recognizer.write` when that method exists, otherwise `recognizer.save`, to `data/trainer.yml`.
+7. The engine sets `model_trained` and clears `is_enrolling`, then calls the event callback directly with `person_type="Authorized"`, confidence `99`, and the detail string `Admin face enrolled successfully (20 samples trained)`. That callback does not pass through the 6-second cooldown.
+8. The dialog treats the run as finished when enrollment is no longer active and either the model is trained or the count has reached the target. **Done** closes it and shows the toast `Administrator face enrolled successfully!`
+
+`data/known_faces/*.jpg` and `data/trainer.yml` are listed in `.gitignore`. A fresh clone starts with `Untrained (Add Face)` until someone completes this flow. If `trainer.yml` is present but `recognizer.read` throws, the engine prints a warning and leaves `model_trained` false.
+
+If no face is detected, the count stays at 0 and `is_enrolling` stays true. The dialog keeps polling until it is closed. Closing the dialog stops the browser poll. It does not send a cancel route to the server, so the engine flag stays set until 20 crops are collected or the process restarts.
+
+## Six-second alert cooldown
+
+The camera loop can see the same person on every frame. Logging each of those frames would fill `events.json` immediately. `VisionEngine` keeps two clocks:
+
+```python
+self.cooldown_seconds = 6.0
 self.last_event_time = {"Authorized": 0.0, "Unidentified": 0.0}
 
 if now - self.last_event_time[person_type] >= 6.0:
     self.last_event_time[person_type] = now
-    self.event_callback(person_type, confidence)
+    self.event_callback(...)
 ```
 
-This guarantees that an ongoing event only registers once every 6 seconds, keeping telemetry readable and preventing notification fatigue.
+The HUD is redrawn on every processed frame. The log row is written only when that class has been quiet for 6 seconds. Authorized and unidentified clocks are independent, so an admin match and an unidentified face can each log inside the same window.
 
-### Alert Dispatch Modes
-When an unidentified subject triggers an alert, `AlertDispatcher` routes the notification through one of two channels:
+When the authorized clock fires, the callback gets the mapped confidence and the detail `Admin verified via facial biometrics`. When the unidentified clock fires, the callback gets confidence `32` and the detail `Unidentified person detected in restricted area`.
 
-```
-                         ┌────────────────────────────────────┐
-                         │  trigger_security_alert(event)     │
-                         └─────────────────┬──────────────────┘
-                                           │
-                        VISIONGUARD_EMAIL & APP_PASSWORD set?
-                                   /               \
-                             YES  /                 \ NO
-                                 ▼                   ▼
-                  [smtplib.SMTP_SSL:465]       [SIMULATED_SMTP]
-                   Live Gmail SSL Alert         Console Log & History
-```
+`on_vision_event` in `app.py` turns that callback into a row and, for unidentified rows only, calls `AlertDispatcher`. An authorized match is logged and is not emailed.
 
-1. **Live Gmail SMTP SSL:** When `VISIONGUARD_EMAIL` and `VISIONGUARD_APP_PASSWORD` environment variables are present, an encrypted alert email is sent via `smtp.gmail.com:465`.
-2. **Simulated SMTP Mode:** If environment variables are omitted, the dispatcher logs the incident to `dispatch_history` and outputs a formatted security message to the console.
+**Simulate Intrusion** and the enrollment-success callback do not consult these clocks. Simulate always inserts a row. Enrollment success always inserts one authorized row.
 
----
+## Event log
 
-## Headless Analytics Engine
+The log is a JSON list at `data/events.json`, guarded by `events_lock`. New rows are inserted at index 0, so the file stays newest-first. After each insert the list is trimmed to 200 rows by dropping the last item, then the whole list is written back with `json.dump(..., indent=2)`.
 
-Running Matplotlib within multi-threaded web servers on macOS can lead to segmentation faults or Cocoa `NSInternalInconsistencyException` crashes if Matplotlib defaults to a GUI backend like MacOSX or TkAgg.
+A live or enrollment row looks like this:
 
-In `analytics.py`, we explicitly configure the headless `Agg` raster backend and point `MPLCONFIGDIR` to a writable temporary directory before importing `pyplot`:
+| Field | Value |
+| :--- | :--- |
+| `id` | `evt-` plus 6 hex characters from `uuid4` |
+| `timestamp` | local time, `YYYY-MM-DD HH:MM:SS` |
+| `type` | `Authorized` or `Alert` |
+| `person` | `Admin` or `Unidentified Person` |
+| `confidence` | integer |
+| `details` | the string passed by the engine, or a short fallback |
+| `status` | `GRANTED` or `ALERT` |
+
+Startup calls `_load_or_seed_events`. A non-empty JSON list in `events.json` is used as-is. The copy in the repository is that kind of file: 28 generated rows, so the dashboard has a log, a banner, and chart input before a camera is attached. If the file is missing, empty, or not valid JSON, `_generate_seed_events` builds a new list of 28 rows and saves it.
+
+Those generated rows are sample text. Seven of them (loop indexes 2, 7, 12, 17, 21, 25, and 27) are alerts with a confidence from 22 to 45 inclusive. The other 21 are authorized rows with a confidence from 72 to 97 inclusive. Timestamps are spread across the previous 8 hours with a few minutes of jitter, and the list is sorted newest-first. Detail strings are chosen from four authorized phrases and four alert phrases in `app.py`. They are not observations of real people.
+
+**Reset** runs that generator again, overwrites the file, and clears `dispatch_history`. The new ids, times, and confidences are random, so a reset does not restore the exact bytes that were committed.
+
+## Optional Gmail alerts and simulated alerts
+
+`AlertDispatcher` runs only for unidentified events: a live unidentified detection that passed the cooldown, or **Simulate Intrusion**. Authorized rows never call it.
+
+The dispatcher reads three environment variables:
+
+| Variable | Role |
+| :--- | :--- |
+| `VISIONGUARD_EMAIL` | Gmail address used as SMTP username and as the From address |
+| `VISIONGUARD_APP_PASSWORD` | Gmail app password. Both this and the email must be set, or mail is skipped |
+| `VISIONGUARD_ALERT_TO` | Recipient. If unset, the sender is used. If the sender is also unset, the placeholder is `security-team@visionguard.local` |
+
+When both secrets are set, the message is plain text sent with `smtplib.SMTP_SSL("smtp.gmail.com", 465)`. The subject is `[VisionGuard Alert] Unidentified Subject Detected` plus the confidence. The body includes the event id, timestamp, type `UNIDENTIFIED_PERSON`, confidence, and details. A successful send is stored in `dispatch_history` with `mode` `GMAIL_SMTP` and `status` `SENT`.
+
+If either secret is missing, or if login or send raises, the same event is stored with `mode` `SIMULATED_SMTP` and `status` `DISPATCHED`, and a block is printed to the terminal. An SMTP exception falls through into that simulated record. It is not dropped.
+
+`dispatch_history` lives in the process. It is not written to `events.json`. Restarting the app clears it. **Reset** clears it too.
+
+The activity-panel badge reads that list. If any record has `mode` `GMAIL_SMTP`, the badge says `Gmail SMTP: Active`. Otherwise it says `SMTP: Simulated`, including on a fresh start before any alert has been sent.
+
+## Headless Matplotlib telemetry
+
+`analytics.py` sets the Matplotlib backend before importing `pyplot`:
 
 ```python
-import os, tempfile
-os.environ.setdefault("MPLCONFIGDIR", os.path.join(tempfile.gettempdir(), "matplotlib"))
+os.environ.setdefault("MPLCONFIGDIR", os.path.join(tempfile.gettempdir(), "visionguard_matplotlib"))
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 ```
 
-The generated figure is saved directly to an in-memory `io.BytesIO` buffer, served with `Cache-Control: no-store` headers, and closed immediately via `plt.close(fig)` to prevent memory leaks across polling cycles.
+`Agg` is a file backend, so the Flask process does not open a GUI window. `MPLCONFIGDIR` points at a writable temp directory because Matplotlib wants a config path of its own.
 
----
+`GET /api/analytics.png` copies the event list under the lock and passes it to `generate_analytics_chart`. The figure is two panels, `figsize=(11.5, 4.2)`, saved to a `BytesIO` buffer as PNG at 110 dpi, then closed with `plt.close(fig)`. The response is `image/png` with `Cache-Control: no-cache, no-store, must-revalidate`. The browser still appends a timestamp query on refresh.
 
-## Performance and Benchmarks
+**Left panel, "Activity by Hour (Last 8h)".** Eight one-hour bins end at the current hour, which is labeled `Current`. Older bins are labeled with that hour, such as `14:00`. A row counts as authorized when its type contains `auth` or `admin`, or its status is `GRANTED`. Every other row in the window counts as an unidentified alert. Rows older than 8 hours are left out of the bars. A sample log whose timestamps are from a previous day will produce an empty-looking bar chart until new rows fall inside the window. The confidence panel does not use that 8-hour cutoff.
 
-Measurements recorded on an Apple M-series processor (8-core CPU) at $640\times 480$ capture resolution:
+**Right panel, "Biometric Confidence Trend (Last 15)".** The code takes `events[:15]` when the list has 15 or fewer rows, and `events[-15:]` when it has more. New rows are inserted at the front, so once the log is longer than 15, `events[-15:]` is the oldest 15 rows. If the first timestamp in that slice is newer than the last, the slice is reversed so the line reads forward in time. Points are green for authorized rows and red for alerts. The x-axis labels are `#1` … `#N`. An empty list draws the text `No Telemetry Events Recorded`. A confidence value that cannot be parsed as a float is drawn as 50.
 
-| Pipeline Stage | Component / Function | Latency | Effective Throughput |
-| :--- | :--- | :---: | :---: |
-| **Frame Read** | `cv2.VideoCapture.read()` | $2.1\text{ ms}$ | $30\text{ FPS}$ (sensor limit) |
-| **Detection** | Haar Frontal Face Cascade | $9.8\text{ ms}$ | $\sim 102\text{ FPS}$ |
-| **Recognition** | LBPH Histogram Comparison | $1.4\text{ ms}$ | $\sim 714\text{ FPS}$ |
-| **OSD Render** | Reticles and Text Overlay | $0.6\text{ ms}$ | $\sim 1600\text{ FPS}$ |
-| **Complete Vision Loop** | Ingest + Detect + Match + Draw | **$13.9\text{ ms}$** | **$\sim 72\text{ FPS}$** |
-| **Chart Generation** | Headless Matplotlib Dual-Plot | $42.5\text{ ms}$ | $23.5\text{ req/s}$ |
-| **Telemetry Endpoint** | `/api/events` (JSON 35 records) | $1.2\text{ ms}$ | $830\text{ req/s}$ |
+## Architecture and data flow
 
----
+![VisionGuard architecture diagram from webcam ingest through Haar and LBPH to the Flask dashboard](assets/architecture_diagram.svg)
 
-## REST API Reference
+The diagram is the map of the pipeline. The steps below are the ones the Python files actually run.
 
-| Method | Endpoint | Description | Response Type |
-| :---: | :--- | :--- | :--- |
-| `GET` | `/` | Serves the security HUD dashboard | `text/html` |
-| `GET` | `/video_feed` | Live MJPEG video stream | `multipart/x-mixed-replace` |
-| `GET` | `/api/events` | Latest 35 events, active threat, and KPI metrics | `application/json` |
-| `GET` | `/api/analytics.png` | In-memory dark-mode telemetry chart | `image/png` |
-| `POST` | `/api/enroll` | Starts live 20-sample face enrollment | `application/json` |
-| `POST` | `/api/simulate_alert` | Simulates an intruder detection and fires alerts | `application/json` |
-| `POST` | `/api/clear_events` | Resets the event log back to 28 seed events | `application/json` |
+```
+Browser  ── GET / ──────────────►  templates/index.html + static/
+        ── GET /video_feed ─────►  VisionEngine.generate_frames (MJPEG)
+        ── GET /api/events ─────►  events list (newest 35) + stats
+        ── GET /api/analytics.png ► analytics.generate_analytics_chart
+        ── POST /api/enroll ────►  VisionEngine.start_enrollment
+        ── POST /api/simulate_alert /api/clear_events
 
----
+VisionEngine loop
+    AVFoundation camera index 0, then 1, requested size 640×480
+        │  retry every 2 seconds when no camera is open
+        ▼
+    frame or the 640×480 offline frame
+        │
+        ▼
+    gray → Haar detectMultiScale → 200×200 crop
+        │
+        ├─ is_enrolling → save admin_N.jpg, cyan badge, train at 20
+        ├─ model trained and distance < 75 → green badge
+        └─ otherwise → red badge
+                │
+                ▼
+        6.0s clock for that class (HUD still updates every frame)
+                │
+                ▼
+        on_vision_event → insert row → data/events.json (max 200)
+                │
+                └─ unidentified only → AlertDispatcher
+                       ├─ Gmail SMTP SSL :465
+                       └─ or SIMULATED_SMTP printed to the terminal
+```
 
-## Getting Started
+`app.py` builds one `VisionEngine` and one `AlertDispatcher` at import time, then loads or seeds the event list before it serves traffic. Flask is started with `host="0.0.0.0"`, `port=5001`, `debug=True`, `use_reloader=False`, and `threaded=True`. The reloader is off so a second process does not open the camera. The vision loop and the request threads share `events_lock` for the JSON list and `VisionEngine.lock` for the capture device and enrollment flags.
+
+Camera open is specific. `_init_camera` tries indexes 0 and 1 with `cv2.CAP_AVFOUNDATION`, which is the macOS backend, and keeps the device only if `read()` returns a frame. It then sets the requested frame size to 640×480. The size printed in the log is the test frame's actual shape, which can differ if the camera refuses that mode. If open or read fails, `cap` stays `None` and every MJPEG part is the offline frame. While offline, the generator sleeps 0.08 seconds between JPEGs so the loop does not spin. JPEG quality is 85. The multipart boundary is `frame`.
+
+## REST API
+
+| Method | Endpoint | Returns |
+| :---: | :--- | :--- |
+| `GET` | `/` | `text/html`. The dashboard template. |
+| `GET` | `/video_feed` | `multipart/x-mixed-replace` MJPEG. Each part is `image/jpeg`. Frames are annotated camera images, or the offline frame when no camera frame is available. |
+| `GET` | `/api/events` | JSON. `events` is the newest 35 rows. `latest_alert` is the first row in the full list with type `Alert` or status `ALERT`, or `null`. `dispatched_emails` is the in-memory dispatcher history. `stats` contains `total_events`, `alerts_count`, `authorized_count`, `model_trained`, `is_enrolling`, `enrollment_count`, and `target_samples` (20). |
+| `GET` | `/api/analytics.png` | `image/png` drawn from the current event list. `Cache-Control` is `no-cache, no-store, must-revalidate`. |
+| `POST` | `/api/enroll` | JSON: `status` `"enrolling"`, a message telling the operator to face the camera for 20 frames, and `target` (20). Starts capture. It does not wait for the 20 crops. |
+| `GET` | `/api/enroll_status` | JSON: `is_enrolling`, `count`, `target`, `model_trained`. |
+| `POST` | `/api/simulate_alert` | JSON: `status` `"ok"`, the inserted event, and the `dispatch` record (`GMAIL_SMTP` / `SENT` or `SIMULATED_SMTP` / `DISPATCHED`). The event uses confidence `random.randint(25, 46)` and the detail `Simulated security alert: Unidentified subject penetrated Zone B`. |
+| `POST` | `/api/clear_events` | JSON: `status` `"ok"` and the message `Telemetry event log reset to fresh historical seed data.` Replaces the log with 28 new generated rows and clears email history. |
+
+There is no request body on the POST routes. They ignore any JSON you attach.
+
+## Project structure
+
+```
+vision-guard/
+├── app.py                         # Flask routes, seed data, event log
+├── vision_engine.py               # Camera, Haar, LBPH, HUD, MJPEG
+├── analytics.py                   # Headless Matplotlib chart
+├── alerts.py                      # Gmail SMTP SSL or simulated console alerts
+├── requirements.txt               # Flask, opencv-contrib-python, matplotlib, numpy
+├── README.md
+├── LICENSE
+├── .gitignore                     # venv, trainer.yml, known face jpgs
+├── assets/
+│   ├── dashboard_overview.png     # Dashboard captured with no webcam
+│   ├── visionguard_hud_stream.png # HUD layout sample, placeholder faces
+│   ├── telemetry_analytics.png    # Sample two-panel telemetry figure
+│   ├── enroll_modal.png           # Add Admin Face dialog
+│   └── architecture_diagram.svg   # Pipeline diagram
+├── templates/
+│   └── index.html                 # Dashboard markup
+├── static/
+│   ├── css/style.css
+│   └── js/
+│       ├── dashboard.js           # Polls, banner, enrollment dialog, buttons
+│       └── shader-canvas.js       # Local WebGL background
+└── data/
+    ├── events.json                # Sample log shipped with the repo
+    ├── haarcascade_frontalface_default.xml
+    └── known_faces/               # Enrollment crops, jpg files gitignored
+```
+
+`data/trainer.yml` is created next to `events.json` after a successful enrollment and is gitignored.
+
+## Install and run
 
 ### Prerequisites
-* Python 3.9 or higher
-* A connected webcam (if no camera is available, VisionGuard displays a dark fallback test pattern)
+
+* Python 3.9 or newer
+* A webcam if you want live detection or enrollment. The open path uses AVFoundation and tries camera indexes 0 and 1, which is the macOS setup this code was written for. If `read()` never returns a frame, the server still starts and the video panel shows `CAMERA STREAM OFFLINE / CHECK PERMISSIONS`.
 
 ### Installation
+
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/lalitg13/vision-guard.git
    cd vision-guard
    ```
 
 2. Create a virtual environment and install dependencies:
+
    ```bash
    python3 -m venv venv
    source venv/bin/activate
    pip install -r requirements.txt
    ```
 
-3. (Optional) Set up email alerting credentials:
+   `requirements.txt` installs Flask 3.0 or newer, `opencv-contrib-python` 4.10 or newer (needed for `cv2.face`), Matplotlib 3.9 or newer, and NumPy 1.26 or newer.
+
+3. Optional: turn on Gmail alerts. Leave these unset to keep simulated console alerts.
+
    ```bash
    export VISIONGUARD_EMAIL="your-email@gmail.com"
    export VISIONGUARD_APP_PASSWORD="your-app-password"
    export VISIONGUARD_ALERT_TO="security-recipient@example.com"
    ```
-   *If these are left unset, VisionGuard operates in simulated console mode automatically.*
 
-### Running the Server
-Start the Flask application:
+   `VISIONGUARD_APP_PASSWORD` is a Gmail app password, not the normal account password. The recipient defaults to `VISIONGUARD_EMAIL` when `VISIONGUARD_ALERT_TO` is omitted.
+
+### Running the server
+
+From the repository directory, with the virtual environment activated:
+
 ```bash
 python app.py
 ```
 
-Then open your browser to:
-**http://localhost:5001**
+Then open **http://localhost:5001**.
 
-*(Port 5001 is used by default to prevent conflicts with AirPlay Receiver on macOS Sonoma/Sequoia).*
+The process listens on `0.0.0.0:5001`. Port 5001 is the default so it does not collide with AirPlay Receiver on macOS. Debug mode is on and the auto-reloader is off.
 
----
+On a machine with no camera you should see the offline video panel, summary cards filled from `data/events.json`, an activity list, and a chart. The model card stays `Untrained (Add Face)` until `data/trainer.yml` exists. **Simulate Intrusion** adds one alert row and prints the simulated alert in the terminal. **Reset** replaces the sample log.
 
-## Project Structure
-
-```
-vision-guard/
-├── .gitignore
-├── requirements.txt
-├── README.md
-├── app.py                     # Flask server and REST routing
-├── vision_engine.py           # OpenCV pipeline, detection, and LBPH recognition
-├── analytics.py               # Headless Matplotlib telemetry visualizer
-├── alerts.py                  # SMTP and simulated alert dispatcher
-├── assets/
-│   ├── architecture_diagram.svg
-│   ├── visionguard_hud_stream.png
-│   └── telemetry_analytics.png
-├── templates/
-│   └── index.html             # Security HUD frontend
-├── static/
-│   ├── css/
-│   │   └── style.css          # Dark-mode styling
-│   └── js/
-│       └── dashboard.js       # Real-time event polling and HUD logic
-└── data/
-    ├── events.json            # Rolling telemetry database
-    ├── haarcascade_frontalface_default.xml
-    └── known_faces/           # Training crops directory
-        └── .gitkeep
-```
-
----
+To enroll an admin, use a Mac webcam the AVFoundation backend can open, click **Add Admin Face**, and complete 20 detected frames. The badge then reads `Trained (LBPH Active)`.
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See [LICENSE](LICENSE).
